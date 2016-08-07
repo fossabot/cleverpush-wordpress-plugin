@@ -1,1 +1,0 @@
-# cleverpush-wordpress-plugin
