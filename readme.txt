@@ -5,7 +5,7 @@ Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications
 Requires at least: 2.7
 Tested up to: 4.4
-Stable tag: 0.1
+Stable tag: 0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,15 @@ Your theme needs to have the header and footer actions in place before the `</he
 
 = If I use this plugin, do I need to enter any other code on my website? =
 No, this plugin is sufficient by itself
+
+== ChangeLog ==
+
+= 0.3 =
+* Ability to notifications directly in WordPress
+
+= 0.2 =
+* Multi language
+* Simplify settings
 
 == ChangeLog ==
 

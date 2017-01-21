@@ -1,0 +1,92 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2017-01-21 17:04+0100\n"
+"PO-Revision-Date: 2017-01-21 17:05+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.11\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: cleverpush.php:61
+msgid "Send push notification"
+msgstr "Push Benachrichtigung senden"
+
+#: cleverpush.php:133
+msgid "The push notification for this post has been successfully sent."
+msgstr ""
+"Die Push Benachrichtigung für diesen Beitrag wurde erfolgreich versendet."
+
+#: cleverpush.php:216
+#, php-format
+msgid ""
+"You need to have a %s account with an already set up channel to use this "
+"plugin. Please then enter your channel identifier (subdomain) below."
+msgstr ""
+"Du brauchst einen %s Account mit einem bereits eingerichteten Kanal, um "
+"dieses Plugin zu benutzen. Bitte gib dann deine Kanal Subdomain unten rein."
+
+#: cleverpush.php:217
+#, php-format
+msgid "The API keys can be found in the %s."
+msgstr "Die API-Keys können in den %s gefunden werden."
+
+#: cleverpush.php:217
+msgid "API settings"
+msgstr "API Einstellungen"
+
+#: cleverpush.php:224
+msgid "Select Channel"
+msgstr "Kanal auswählen"
+
+#: cleverpush.php:242
+msgid "No channels available"
+msgstr "Keine Kanäle verfügbar"
+
+#: cleverpush.php:246
+msgid "Please enter your API keys first"
+msgstr "Bitte gib zuerst deine API-Keys ein"
+
+#: cleverpush.php:251
+msgid "Public API-Key"
+msgstr "Öffentlicher API-Key"
+
+#: cleverpush.php:256
+msgid "Private API-Key"
+msgstr "Privater API-Key"
+
+#: cleverpush.php:263
+msgid "Save Changes"
+msgstr "Änderungen speichern"
+
+#: cleverpush.php:286
+msgid "CleverPush is almost ready."
+msgstr "CleverPush ist fast einsatzbereit."
+
+#: cleverpush.php:286
+#, php-format
+msgid "You have to select a channel in the %s to get started."
+msgstr "Du musst zuerst einen Kanal in den %s auswählen, um loszulegen."
+
+#: cleverpush.php:286
+msgid "settings"
+msgstr "Einstellungen"
+
+#~ msgid "The API keys can be found in the API settings."
+#~ msgstr "Die API-Keys können in den API Einstellungen gefunden werden."
+
+#~ msgid "You have to enter your API keys in the %s to get started."
+#~ msgstr "Du musst deine API-Keys in den %s eingeben, um loszulegen."
+
+#~ msgid "CleverPush subdomain"
+#~ msgstr "CleverPush Subdomain"
+
+#~ msgid "You have to enter your subdomain in the %s to get started."
+#~ msgstr "Du musst deine Subdomain in den %s eingeben, um loszulegen."
