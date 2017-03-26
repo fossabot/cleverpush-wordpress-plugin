@@ -30,6 +30,9 @@ No, this plugin is sufficient by itself
 
 == ChangeLog ==
 
+= 0.4 =
+* WooCommerce integration with automatic retargeting notifications.
+
 = 0.3 =
 * Ability to notifications directly in WordPress
 
