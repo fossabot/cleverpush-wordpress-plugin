@@ -2,10 +2,10 @@
 Contributors: CleverPush
 Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
-Tags: push notifications, web push, browser notifications
+Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
-Tested up to: 4.4
-Stable tag: 0.3
+Tested up to: 4.7
+Stable tag: 0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,8 +39,6 @@ No, this plugin is sufficient by itself
 = 0.2 =
 * Multi language
 * Simplify settings
-
-== ChangeLog ==
 
 = 0.1 =
 * Initial release
