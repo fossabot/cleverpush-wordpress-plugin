@@ -5,7 +5,7 @@ Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
 Tested up to: 4.7
-Stable tag: 0.4
+Stable tag: 0.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,9 @@ Your theme needs to have the header and footer actions in place before the `</he
 No, this plugin is sufficient by itself
 
 == ChangeLog ==
+
+= 0.4.1 =
+* Hotfix for WooCommerce integration
 
 = 0.4 =
 * WooCommerce integration with automatic retargeting notifications.

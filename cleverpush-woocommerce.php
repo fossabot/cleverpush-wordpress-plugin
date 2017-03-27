@@ -32,18 +32,19 @@ class WC_Integration_CleverPush extends WC_Integration
 
         $sessionHandler = new WC_Session_Handler();
         $session = $sessionHandler->get_session($customer_id);
-        if (!empty($session) && isset($session['cart']) && !empty($session['cleverpush_subscription_id'])) { // still items in cart
+        if (!empty($session) && !empty($session['cart']) && !empty($session['cleverpush_subscription_id'])) { // still items in cart
             $product = wc_get_product($product_id);
             if ($product) {
                 $title = $product->get_title();
                 $emoji = json_decode('"\ud83d\uded2"');
-                $body = $emoji. ' ' . get_option('cleverpush_woocommerce_enabled', 'Wir haben noch etwas in deinem Warenkorb gefunden.');
-                $url = WC()->cart->get_cart_url();
-                $attachment_image = wp_get_attachment_image_src( get_post_thumbnail_id( $product_id ), 'single-post-thumbnail' );
+                $body = $emoji. ' ' . get_option('cleverpush_woocommerce_notification_text', 'Wir haben noch etwas in deinem Warenkorb gefunden.');
+                $url = WC_Cart::get_cart_url();
+                $attachment_image = wp_get_attachment_image_src(get_post_thumbnail_id($product_id), 'single-post-thumbnail' );
                 $iconUrl = $attachment_image[0];
                 $subscriptionId = $session['cleverpush_subscription_id'];
 
-                if (count($session['cart']) > 1) {
+                $cart = unserialize($session['cart']);
+                if (count($cart) > 1) {
                     $title = get_bloginfo('name');
                     $iconUrl = null;
                 }
