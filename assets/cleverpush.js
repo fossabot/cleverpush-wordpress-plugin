@@ -1,15 +1,25 @@
-(function(c,l,v,r,p,s,h){c['CleverPushObject']=p;c[p]=c[p]||function(){(c[p].q=c[p].q||[]).push(arguments)},c[p].l=1*new Date();s=l.createElement(v),h=l.getElementsByTagName(v)[0];s.async=1;s.src=r;h.parentNode.insertBefore(s,h)})(window,document,'script','//' + cleverpushConfig.identifier + '.cleverpush.com/loader.js','cleverpush');
+CleverPush = window.CleverPush || [];
 
-cleverpush('triggerOptIn', function(subscriptionIdParam) {
-    var subscriptionId = subscriptionIdParam ? subscriptionIdParam : localStorage.getItem('push-subscription-id');
-    console.log(subscriptionId);
+CleverPush.push(['init', {
+    channelId: cleverpushWordpressConfig.channelId,
+    autoRegister: false
+}]);
 
-    fetch(cleverpushConfig.ajaxUrl, {
-        credentials: 'include',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
-        },
-        body: 'action=cleverpush_subscription_id&subscriptionId=' + subscriptionId
-    });
-});
+CleverPush.push(['triggerOptIn', function(err, subscriptionId) {
+    if (subscriptionId) {
+        fetch(cleverpushWordpressConfig.ajaxUrl, {
+            credentials: 'include',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
+            },
+            body: 'action=cleverpush_subscription_id&subscriptionId=' + subscriptionId
+        });
+    } else {
+        if (err) {
+            console.error('CleverPush:', err);
+        } else {
+            console.error('CleverPush: subscription ID not found');
+        }
+    }
+}]);

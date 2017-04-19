@@ -184,11 +184,12 @@ class CleverPush
         $woocommerce_available = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
         $woocommerce_enabled = false;
 
-        $cleverpush_identifier = get_option('cleverpush_channel_subdomain');
-        if (!empty($cleverpush_identifier)) {
+        $cleverpush_id = get_option('cleverpush_channel_id');
+        if (!empty($cleverpush_id)) {
             echo '<script src="//cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>';
+            echo '<script src="//static.cleverpush.com/sdk/cleverpush.js" async></script>';
             echo '<script>';
-            echo 'var cleverpushConfig = ' . json_encode(['identifier' => $cleverpush_identifier, 'ajaxUrl' => admin_url('admin-ajax.php'), 'woocommerceEnabled' => $woocommerce_available && $woocommerce_enabled]) . ';';
+            echo 'var cleverpushWordpressConfig = ' . json_encode(['channelId' => $cleverpush_id, 'ajaxUrl' => admin_url('admin-ajax.php'), 'woocommerceEnabled' => $woocommerce_available && $woocommerce_enabled]) . ';';
             echo file_get_contents(plugin_dir_path( __FILE__ ) . '/assets/cleverpush.js');
             echo '</script>';
         }
