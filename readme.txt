@@ -12,21 +12,19 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 CleverPush lets you send browser push notifications to your users in the simplest way possible.
 
 == Description ==
-Installing the CleverPush plugin will automatically insert the CleverPush code into your WordPress site.
+Installing the CleverPush plugin will automatically insert the CleverPush code into your WordPress site. It will also give you the possibility to create a notification when publishing a new post.
+Another great thing is completely automated re-targeting for WooCommerce.
 
 What is CleverPush?
 
 CleverPush lets you send browser push notifications to your users in the simplest way possible.
 
 == Installation ==
-Extract the zip file and just drop the contents in the wp-content/plugins/ directory of your WordPress installation and then activate the Plugin from Plugins page.
+Extract the zip file and just drop the contents in the wp-content/plugins/ directory of your WordPress installation and then activate the Plugin from the Plugins page.
 
 == Frequently Asked Questions ==
-= I can't see any code added to my header or footer when I view my page source =
-Your theme needs to have the header and footer actions in place before the `</head>` and before the `</body>`
-
-= If I use this plugin, do I need to enter any other code on my website? =
-No, this plugin is sufficient by itself
+= I have activated the plugin but the confirmation prompt is now shown =
+Please enter your API keys in the plugin's settings and select a channel. If no channel is available, you need to create one at cleverpush.com
 
 == ChangeLog ==
 
@@ -51,12 +49,4 @@ No, this plugin is sufficient by itself
 
 == Configuration ==
 
-Enter your CleverPush channel identifier in the given field.
-
-== Adding it to your template ==
-
-header code:
-`<?php wp_head();?>`
-
-footer code: 
-`<?php wp_footer();?>`
+Enter your CleverPush API keys in the given fields. You can find your API keys in the CleverPush backoffice under Settings > API.
