@@ -25,6 +25,7 @@ Extract the zip file and just drop the contents in the wp-content/plugins/ direc
 == Frequently Asked Questions ==
 = I have activated the plugin but the confirmation prompt is now shown =
 Please enter your API keys in the plugin's settings and select a channel. If no channel is available, you need to create one at cleverpush.com
+If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
 
