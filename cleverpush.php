@@ -80,7 +80,11 @@ class CleverPush
 
     public function set_subscription_id()
     {
-        WC()->session->set('cleverpush_subscription_id', $_POST['subscriptionId']);
+        $woocommerce_available = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
+        if ($woocommerce_available)
+        {
+            WC()->session->set('cleverpush_subscription_id', $_POST['subscriptionId']);
+        }
         wp_die();
     }
 
@@ -182,14 +186,13 @@ class CleverPush
     public function javascript()
     {
         $woocommerce_available = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
-        $woocommerce_enabled = false;
 
         $cleverpush_id = get_option('cleverpush_channel_id');
         if (!empty($cleverpush_id)) {
             echo '<script src="//cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>';
             echo '<script src="//static.cleverpush.com/sdk/cleverpush.js" async></script>';
             echo '<script>';
-            echo 'var cleverpushWordpressConfig = ' . json_encode(['channelId' => $cleverpush_id, 'ajaxUrl' => admin_url('admin-ajax.php'), 'woocommerceEnabled' => $woocommerce_available && $woocommerce_enabled]) . ';';
+            echo 'var cleverpushWordpressConfig = ' . json_encode(['channelId' => $cleverpush_id, 'ajaxUrl' => admin_url('admin-ajax.php'), 'woocommerceAvailable' => $woocommerce_available]) . ';';
             echo file_get_contents(plugin_dir_path( __FILE__ ) . '/assets/cleverpush.js');
             echo '</script>';
         }
