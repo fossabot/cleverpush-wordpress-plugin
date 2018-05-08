@@ -9,7 +9,7 @@ branches:
 deploy:
   skip_cleanup: true
   provider: script
-  script: deploy/deploy.sh
+  script: sh $TRAVIS_BUILD_DIR/deploy/deploy.sh
   on:
     tags: true
 env:
