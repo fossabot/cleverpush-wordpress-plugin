@@ -55,16 +55,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
          */
         public function init()
         {
-            if (class_exists('WC_Integration') && get_option('cleverpush_woocommerce_enabled') == 1) {
-                include_once 'cleverpush-woocommerce.php';
-                add_filter('woocommerce_integrations', array($this, 'add_woocommerce_integration'));
-            }
-        }
 
-        public function add_woocommerce_integration($integrations)
-        {
-            $integrations[] = 'WC_Integration_CleverPush';
-            return $integrations;
         }
 
         public function warn_nosettings()
@@ -76,16 +67,6 @@ if ( ! class_exists( 'CleverPush' ) ) :
             if (empty(get_option('cleverpush_channel_id')) || empty(get_option('cleverpush_channel_subdomain'))) {
                 echo '<div class="updated fade"><p><strong>' . __('CleverPush is almost ready.', 'cleverpush') . '</strong> ' . sprintf(__('You have to select a channel in the %s to get started.', 'cleverpush'), '<a href="options-general.php?page=cleverpush_options">' . __('settings', 'cleverpush') . '</a>') . '</p></div>';
             }
-        }
-
-        public function set_subscription_id()
-        {
-            $woocommerce_available = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
-            if ($woocommerce_available)
-            {
-                WC()->session->set('cleverpush_subscription_id', $_POST['subscriptionId']);
-            }
-            wp_die();
         }
 
         public function plugin_add_settings_link($links)
@@ -178,23 +159,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
             register_setting('cleverpush_options', 'cleverpush_channel_subdomain');
             register_setting('cleverpush_options', 'cleverpush_apikey_private');
             register_setting('cleverpush_options', 'cleverpush_apikey_public');
-            register_setting('cleverpush_options', 'cleverpush_woocommerce_enabled');
-            register_setting('cleverpush_options', 'cleverpush_woocommerce_notification_minutes');
-            register_setting('cleverpush_options', 'cleverpush_woocommerce_notification_text');
         }
 
         public function javascript()
         {
-            $woocommerce_available = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
-
             $cleverpush_id = get_option('cleverpush_channel_id');
             if (!empty($cleverpush_id)) {
-                echo '<script src="//cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>';
-                echo '<script src="//static.cleverpush.com/sdk/cleverpush.js" async></script>';
-                echo '<script>';
-                echo 'var cleverpushWordpressConfig = ' . json_encode(['channelId' => $cleverpush_id, 'ajaxUrl' => admin_url('admin-ajax.php'), 'woocommerceAvailable' => $woocommerce_available]) . ';';
-                echo file_get_contents(plugin_dir_path( __FILE__ ) . '/assets/cleverpush.js');
-                echo '</script>';
+                echo '<script src="//static.cleverpush.com/channel/loader/' . $cleverpush_id . '.js" async></script>';
             }
         }
 
@@ -228,13 +199,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
                 }
             }
 
-            $woocommerce_available = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
-
             ?>
 
             <div class="wrap">
                 <h2>CleverPush</h2>
-                <p><?php echo sprintf(__('You need to have a %s account with an already set up channel to use this plugin. Please then enter your channel identifier (subdomain) below.', 'cleverpush'), '<a target="_blank" href="https://cleverpush.com/">CleverPush</a>'); ?></p>
+                <p><?php echo sprintf(__('You need to have a %s account with an already set up channel to use this plugin. Please then select your channel below.', 'cleverpush'), '<a target="_blank" href="https://cleverpush.com/">CleverPush</a>'); ?></p>
                 <p><?php echo sprintf(__('The API keys can be found in the %s.', 'cleverpush'), '<a href="https://cleverpush.com/app/settings/api" target="_blank">' . __('API settings', 'cleverpush') . '</a>'); ?></p>
 
                 <form method="post" action="options.php">
@@ -279,33 +248,6 @@ if ( ! class_exists( 'CleverPush' ) ) :
                                        value="<?php echo get_option('cleverpush_apikey_private'); ?>" style="width: 320px;"/></td>
                         </tr>
 
-                        <?php if ($woocommerce_available): ?>
-
-                            <tr valign="top">
-                                <th scope="row"><?php _e('WooCommerce Integration', 'cleverpush'); ?></th>
-                                <td>
-                                    <label><input type="checkbox" name="cleverpush_woocommerce_enabled"
-                                                  value="1" <?php checked('1', get_option('cleverpush_woocommerce_enabled')); ?>/> aktiviert</label>
-                                </td>
-                            </tr>
-
-                            <tr valign="top">
-                                <th scope="row"><?php _e('WooCommerce Benachrichtigung', 'cleverpush'); ?></th>
-                                <td>
-                                    Nach <input type="number" name="cleverpush_woocommerce_notification_minutes" style="width: 70px;"
-                                                value="<?php echo get_option('cleverpush_woocommerce_notification_minutes', 30); ?>"/> Minuten senden, falls Produkt noch im Warenkorb
-                                </td>
-                            </tr>
-
-                            <tr valign="top">
-                                <th scope="row"><?php _e('WooCommerce Benachrichtigungs-Text', 'cleverpush'); ?></th>
-                                <td>
-                                    <input type="text" name="cleverpush_woocommerce_notification_text"
-                                           value="<?php echo get_option('cleverpush_woocommerce_notification_text', 'Wir haben noch etwas in deinem Warenkorb gefunden.'); ?>" style="width: 420px;"/>
-                                </td>
-                            </tr>
-
-                        <?php endif; ?>
                     </table>
 
                     <p class="submit"><input type="submit" class="button-primary"

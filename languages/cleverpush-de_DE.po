@@ -28,10 +28,10 @@ msgstr ""
 #, php-format
 msgid ""
 "You need to have a %s account with an already set up channel to use this "
-"plugin. Please then enter your channel identifier (subdomain) below."
+"plugin. Please then select your channel below."
 msgstr ""
 "Du brauchst einen %s Account mit einem bereits eingerichteten Kanal, um "
-"dieses Plugin zu benutzen. Bitte gib dann deine Kanal Subdomain unten rein."
+"dieses Plugin zu benutzen. Bitte wählen Sie den Kanal anschließend unten aus."
 
 #: cleverpush.php:217
 #, php-format
