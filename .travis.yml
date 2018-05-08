@@ -7,6 +7,7 @@ branches:
   only:
   - "/\\d\\.\\d\\.\\d/"
 deploy:
+  skip_cleanup: true
   provider: script
   script: deploy/deploy.sh
   on:
