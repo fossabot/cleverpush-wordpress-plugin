@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right trough your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.6.0
+Version: 0.6.1
 Author URI: https://cleverpush.com
 
 This relies on the actions being present in the themes header.php and footer.php
@@ -35,7 +35,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
             add_action('add_meta_boxes', array($this, 'create_metabox'));
             add_action('save_post', array($this, 'save_post'), 10, 2);
             add_action('admin_notices', array($this, 'notices'));
-            add_action('publish_post', array($this, 'send_notification'), 10, 1);
+            add_action('publish_post', array($this, 'publish_post'), 10, 1);
 
             add_action('wp_ajax_cleverpush_subscription_id', array($this, 'set_subscription_id'));
             add_action('wp_ajax_nopriv_cleverpush_subscription_id', array($this, 'set_subscription_id'));
