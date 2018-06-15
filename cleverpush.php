@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right trough your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.6.1
+Version: 0.6.2
 Author URI: https://cleverpush.com
 
 This relies on the actions being present in the themes header.php and footer.php
@@ -101,19 +101,20 @@ if ( ! class_exists( 'CleverPush' ) ) :
                 return;
             }
 
-            if (!isset($_POST ['cleverpush_metabox_form_data_available']) ? isset($_POST['cleverpush_send_notification']) : get_post_meta($post_id, 'cleverpush_send_notification', true))
+            if (isset($_POST ['cleverpush_metabox_form_data_available']) ? !isset($_POST['cleverpush_send_notification']) : !get_post_meta($post_id, 'cleverpush_send_notification', true))
             {
                 return;
             }
 
-            $title = html_entity_decode(get_bloginfo('name'));
-            $body = html_entity_decode(get_the_title($post_id));
+            $title = !empty(get_bloginfo('name')) ? html_entity_decode(get_bloginfo('name')) : html_entity_decode(get_the_title($post_id));
+            $body = !empty(get_bloginfo('name')) ? html_entity_decode(get_the_title($post_id)) : '';
             $url = get_permalink($post_id);
+
+            delete_post_meta($post_id, 'cleverpush_send_notification');
 
             try {
                 CleverPush_Api::send_notification($title, $body, $url);
                 update_option('cleverpush_notification_result', array('status' => 'success'));
-                delete_post_meta($post_id, 'cleverpush_send_notification');
 
             } catch (Exception $ex) {
                 update_option('cleverpush_notification_result', array('status' => 'error', 'message' => $ex->getMessage() ));
