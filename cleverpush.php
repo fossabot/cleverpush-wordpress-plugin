@@ -166,7 +166,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
         {
             $cleverpush_id = get_option('cleverpush_channel_id');
             if (!empty($cleverpush_id)) {
-                echo "<script>window.cleverPushConfig = { plugin: 'wordpress', serviceWorkerFile: '/wp-content/plugins/" . plugin_basename(plugin_dir_path( __FILE__ ) . '/assets/cleverpush-worker.js.php') . "' };</script>\n";
+                // echo "<script>window.cleverPushConfig = { plugin: 'wordpress', serviceWorkerFile: '/wp-content/plugins/" . plugin_basename(plugin_dir_path( __FILE__ ) . '/assets/cleverpush-worker.js.php') . "' };</script>\n";
                 echo "<script src=\"//static.cleverpush.com/channel/loader/" . $cleverpush_id . ".js\" async></script>\n";
             }
         }
