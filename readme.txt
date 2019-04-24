@@ -4,8 +4,8 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
-Tested up to: 5.0
-Stable tag: 0.6.4
+Tested up to: 5.1
+Stable tag: 0.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,9 @@ Please enter your API keys in the plugin's settings and select a channel. If no 
 If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
+
+= 0.7.0 =
+* added ability to set custom headline and text when sending new notifications
 
 = 0.6.4 =
 * minor fix

@@ -55,19 +55,18 @@ class CleverPush_Api
         return $response;
     }
 
-    public static function send_notification($title, $body, $url, $iconUrl = null, $subscriptionId = null)
+    public static function send_notification($title, $body, $url, $options = array(), $subscriptionId = null)
     {
-        $params = array(
+        $params = array_merge(array(
             'title' => $title,
             'text' => $body,
             'url' => $url
-        );
-        if ($iconUrl) {
-            $params['iconUrl'] = $iconUrl;
-        }
+        ), $options);
+
         if ($subscriptionId) {
             $params['subscriptionId'] = $subscriptionId;
         }
+
         return CleverPush_Api::request('/notification/send', $params);
     }
 }
