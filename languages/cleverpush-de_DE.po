@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-04-24 18:29+0000\n"
-"PO-Revision-Date: 2019-04-24 18:30+0000\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2019-04-25 22:04+0000\n"
+"PO-Revision-Date: 2019-04-25 22:05+0000\n"
+"Last-Translator: admin <marius@justviral.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -30,40 +30,52 @@ msgstr "Du musst zuerst einen Kanal in den %s auswählen, um loszulegen."
 msgid "settings"
 msgstr "Einstellungen"
 
-#: cleverpush.php:146
+#: cleverpush.php:94
+msgid "A notification as been sent for this post"
+msgstr "Es wurde eine Benachrichtigung für diesen Beitrag versendet"
+
+#: cleverpush.php:155
 msgid "Send push notification"
 msgstr "Push Benachrichtigung senden"
 
-#: cleverpush.php:151
+#: cleverpush.php:160
 msgid "Custom headline"
 msgstr "Eigene Headline"
 
-#: cleverpush.php:156
+#: cleverpush.php:165
 msgid "Custom text"
 msgstr "Eigener Text"
 
-#: cleverpush.php:164
-msgid "Topic"
-msgstr "Themenbereich"
+#: cleverpush.php:173
+msgid "Topics"
+msgstr "Themenbereiche"
 
-#: cleverpush.php:167 cleverpush.php:189
+#: cleverpush.php:176 cleverpush.php:207
 msgid "All subscriptions"
 msgstr "Alle Abonnements"
 
-#: cleverpush.php:186
-msgid "Segment"
-msgstr "Segment"
+#: cleverpush.php:179
+msgid "Select topics"
+msgstr "Themen auswählen"
 
-#: cleverpush.php:221 cleverpush.php:384
+#: cleverpush.php:204
+msgid "Segments"
+msgstr "Segmente"
+
+#: cleverpush.php:210
+msgid "Select segments"
+msgstr "Segmente auswählen"
+
+#: cleverpush.php:268 cleverpush.php:440
 msgid "Please enter your API keys first"
 msgstr "Bitte gib zuerst deine API-Keys ein"
 
-#: cleverpush.php:286
+#: cleverpush.php:342
 msgid "The push notification for this post has been successfully sent."
 msgstr ""
 "Die Push Benachrichtigung für diesen Beitrag wurde erfolgreich versendet."
 
-#: cleverpush.php:354
+#: cleverpush.php:410
 #, php-format
 msgid ""
 "You need to have a %s account with an already set up channel to use this "
@@ -72,32 +84,32 @@ msgstr ""
 "Du brauchst einen %s Account mit einem bereits eingerichteten Kanal, um "
 "dieses Plugin zu benutzen. Bitte wählen Sie den Kanal anschließend unten aus."
 
-#: cleverpush.php:355
+#: cleverpush.php:411
 #, php-format
 msgid "The API keys can be found in the %s."
 msgstr "Die API-Keys können in den %s gefunden werden."
 
-#: cleverpush.php:355
+#: cleverpush.php:411
 msgid "API settings"
 msgstr "API Einstellungen"
 
-#: cleverpush.php:362
+#: cleverpush.php:418
 msgid "Select Channel"
 msgstr "Kanal auswählen"
 
-#: cleverpush.php:380
+#: cleverpush.php:436
 msgid "No channels available"
 msgstr "Keine Kanäle verfügbar"
 
-#: cleverpush.php:389
+#: cleverpush.php:445
 msgid "Public API-Key"
 msgstr "Öffentlicher API-Key"
 
-#: cleverpush.php:394
+#: cleverpush.php:450
 msgid "Private API-Key"
 msgstr "Privater API-Key"
 
-#: cleverpush.php:402
+#: cleverpush.php:458
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 

@@ -4,13 +4,10 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.0
+Version: 0.7.1
 Author URI: https://cleverpush.com
-
-This relies on the actions being present in the themes header.php and footer.php
-* header.php code before the closing </head> tag
-*   wp_head();
-*
+Text Domain: cleverpush
+Domain Path: /languages
 */
 
 if (!defined('ABSPATH')) {
@@ -87,6 +84,15 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
         public function metabox($post)
         {
+            $notification_sent = get_post_meta(get_the_ID(), 'cleverpush_notification_sent', true);
+
+            if ($notification_sent) {
+                ?>
+                ✅ <?php _e('A notification as been sent for this post', 'cleverpush'); ?>
+                <?php
+                return;
+            }
+
             $selected_channel_id = get_option('cleverpush_channel_id');
             $api_key_private = get_option('cleverpush_apikey_private');
 
@@ -161,19 +167,28 @@ if ( ! class_exists( 'CleverPush' ) ) :
                     if (!empty($cleverpush_topics) && count($cleverpush_topics) > 0) {
                         ?>
                         <div class="components-base-control__field">
-                            <label class="components-base-control__label" for="cleverpush_topic_id"><?php _e('Topic', 'cleverpush'); ?>:</label>
+                            <label class="components-base-control__label"><?php _e('Topics', 'cleverpush'); ?>:</label>
                             <div>
-                                <select name="cleverpush_topic_id" id="cleverpush_topic_id">
-                                    <option value=""><?php _e('All subscriptions', 'cleverpush'); ?></option>
-                                    <?php
-                                    foreach ($cleverpush_topics as $topic) {
-                                        ?>
-                                        <option value="<?php echo $topic->_id; ?>"><?php echo $topic->name; ?></option>
-                                        <?php
-                                    }
-                                    ?>
-                                </select>
+                                <div>
+                                    <label><input name="cleverpush_use_topics" type="radio" value="0" checked> <?php _e('All subscriptions', 'cleverpush'); ?></label>
+                                </div>
+                                <div>
+                                    <label><input name="cleverpush_use_topics" type="radio" value="1"> <?php _e('Select topics', 'cleverpush'); ?></label>
+                                </div>
                             </div>
+                        </div>
+                        <div class="components-base-control__field cleverpush-topics" style="display: none; margin-left: 30px;">
+                            <?php
+                            foreach ($cleverpush_topics as $topic) {
+                                ?>
+                                <div>
+                                    <label>
+                                        <input type="checkbox" name="cleverpush_topics[]" value="<?php echo $topic->_id; ?>"><?php echo $topic->name; ?></input>
+                                    </label>
+                                </div>
+                                <?php
+                            }
+                            ?>
                         </div>
                         <?php
                     }
@@ -183,19 +198,28 @@ if ( ! class_exists( 'CleverPush' ) ) :
                     if (!empty($cleverpush_segments) && count($cleverpush_segments) > 0) {
                         ?>
                         <div class="components-base-control__field">
-                            <label class="components-base-control__label" for="cleverpush_segment_id"><?php _e('Segment', 'cleverpush'); ?>:</label>
+                            <label class="components-base-control__label"><?php _e('Segments', 'cleverpush'); ?>:</label>
                             <div>
-                                <select name="cleverpush_segment_id" id="cleverpush_segment_id">
-                                    <option value=""><?php _e('All subscriptions', 'cleverpush'); ?></option>
-                                    <?php
-                                    foreach ($cleverpush_segments as $segment) {
-                                        ?>
-                                        <option value="<?php echo $segment->_id; ?>"><?php echo $segment->name; ?></option>
-                                        <?php
-                                    }
-                                    ?>
-                                </select>
+                                <div>
+                                    <label><input name="cleverpush_use_segments" type="radio" value="0" checked> <?php _e('All subscriptions', 'cleverpush'); ?></label>
+                                </div>
+                                <div>
+                                    <label><input name="cleverpush_use_segments" type="radio" value="1"> <?php _e('Select segments', 'cleverpush'); ?></label>
+                                </div>
                             </div>
+                        </div>
+                        <div class="components-base-control__field cleverpush-segments" style="display: none; margin-left: 30px;">
+                                <?php
+                                foreach ($cleverpush_segments as $segment) {
+                                    ?>
+                                    <div>
+                                        <label>
+                                            <input type="checkbox" name="cleverpush_segments[]" value="<?php echo $segment->_id; ?>"><?php echo $segment->name; ?></input>
+                                        </label>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
                         </div>
                     <?php
                     }
@@ -209,6 +233,26 @@ if ( ! class_exists( 'CleverPush' ) ) :
                         cpCheckbox.addEventListener('change', function (e) {
                             cpContent.style.display = e.target.checked ? 'block' : 'none';
                         });
+
+                        var cpTopicsRadios = document.querySelectorAll('input[name="cleverpush_use_topics"]');
+                        var cpTopics = document.querySelector('.cleverpush-topics');
+                        if (cpTopicsRadios && cpTopics) {
+                            for (var cpTopicsRadioIndex = 0; cpTopicsRadioIndex < cpTopicsRadios.length; cpTopicsRadioIndex++) {
+                                cpTopicsRadios[cpTopicsRadioIndex].addEventListener('change', function (e) {
+                                    cpTopics.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
+                                });
+                            }
+                        }
+
+                        var cpSegmentsRadios = document.querySelectorAll('input[name="cleverpush_use_segments"]');
+                        var cpSegments = document.querySelector('.cleverpush-segments');
+                        if (cpTopicsRadios && cpTopics) {
+                            for (var cpSegmentRadioIndex = 0; cpSegmentRadioIndex < cpSegmentsRadios.length; cpSegmentRadioIndex++) {
+                                cpSegmentsRadios[cpSegmentRadioIndex].addEventListener('change', function (e) {
+                                    cpSegments.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
+                                });
+                            }
+                        }
                     }
                 </script>
 
@@ -231,8 +275,12 @@ if ( ! class_exists( 'CleverPush' ) ) :
                 return;
             }
 
-            if (isset($_POST ['cleverpush_metabox_form_data_available']) ? !isset($_POST['cleverpush_send_notification']) : !get_post_meta($post_id, 'cleverpush_send_notification', true))
+            if (isset($_POST['cleverpush_metabox_form_data_available']) ? !isset($_POST['cleverpush_send_notification']) : !get_post_meta($post_id, 'cleverpush_send_notification', true))
             {
+                return;
+            }
+
+            if (get_post_meta($post_id, 'cleverpush_notification_sent', true)) {
                 return;
             }
 
@@ -241,26 +289,31 @@ if ( ! class_exists( 'CleverPush' ) ) :
             $url = get_permalink($post_id);
 
             if (!empty($_POST['cleverpush_title'])) {
-                $title = $_POST['cleverpush_title'];
+                $title = stripslashes($_POST['cleverpush_title']);
+                $text = '';
             }
             if (!empty($_POST['cleverpush_text'])) {
-                $text = $_POST['cleverpush_text'];
+                $text = stripslashes($_POST['cleverpush_text']);
             }
 
             $options = array();
-            if (!empty($_POST['cleverpush_segment_id'])) {
-                $options['segments'] = [$_POST['cleverpush_segment_id']];
+            if ($_POST['cleverpush_use_segments'] == '1' && !empty($_POST['cleverpush_segments'])) {
+                $options['segments'] = $_POST['cleverpush_segments'];
             }
-            if (!empty($_POST['cleverpush_topic_id'])) {
-                $options['topics'] = [$_POST['cleverpush_topic_id']];
+            if ($_POST['cleverpush_use_topics'] == '1' && !empty($_POST['cleverpush_topics'])) {
+                $options['topics'] = $_POST['cleverpush_topics'];
             }
-
+            $thumbnail_url = get_the_post_thumbnail_url();
+            if (!empty($thumbnail_url)) {
+                $options['mediaUrl'] = $thumbnail_url;
+            }
 
             delete_post_meta($post_id, 'cleverpush_send_notification');
 
             try {
                 CleverPush_Api::send_notification($title, $text, $url, $options);
                 update_option('cleverpush_notification_result', array('status' => 'success'));
+                update_post_meta($post_id, 'cleverpush_notification_sent', true);
 
             } catch (Exception $ex) {
                 update_option('cleverpush_notification_result', array('status' => 'error', 'message' => $ex->getMessage() ));
