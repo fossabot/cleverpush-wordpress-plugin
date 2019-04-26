@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.1
+Version: 0.7.2
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -246,7 +246,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
                         var cpSegmentsRadios = document.querySelectorAll('input[name="cleverpush_use_segments"]');
                         var cpSegments = document.querySelector('.cleverpush-segments');
-                        if (cpTopicsRadios && cpTopics) {
+                        if (cpSegmentsRadios && cpSegments) {
                             for (var cpSegmentRadioIndex = 0; cpSegmentRadioIndex < cpSegmentsRadios.length; cpSegmentRadioIndex++) {
                                 cpSegmentsRadios[cpSegmentRadioIndex].addEventListener('change', function (e) {
                                     cpSegments.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
