@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.2
+Version: 0.7.3
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -87,10 +87,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
             $notification_sent = get_post_meta(get_the_ID(), 'cleverpush_notification_sent', true);
 
             if ($notification_sent) {
-                ?>
-                ✅ <?php _e('A notification as been sent for this post', 'cleverpush'); ?>
-                <?php
-                return;
+                $notification_sent_at = get_post_meta(get_the_ID(), 'cleverpush_notification_sent_at', true);
+                if (!empty($notification_sent_at) && (time() - $notification_sent_at) < 60) {
+                    ?>
+                    ✅ <?php _e('A notification as been sent for this post', 'cleverpush'); ?>
+                    <?php
+                    return;
+                }
             }
 
             $selected_channel_id = get_option('cleverpush_channel_id');
@@ -253,6 +256,18 @@ if ( ! class_exists( 'CleverPush' ) ) :
                                 });
                             }
                         }
+
+                        if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
+                            wp.data.subscribe(function () {
+                                console.log('wp.data.subscribe');
+                                var isSavingPost = wp.data.select('core/editor').isSavingPost();
+                                var isAutosavingPost = wp.data.select('core/editor').isAutosavingPost();
+                                console.log('on save', isSavingPost, isAutosavingPost);
+                                if (isSavingPost && !isAutosavingPost && cpCheckbox && cpCheckbox.checked) {
+                                    cpCheckbox.checked = false;
+                                }
+                            });
+                        }
                     }
                 </script>
 
@@ -281,11 +296,14 @@ if ( ! class_exists( 'CleverPush' ) ) :
             }
 
             if (get_post_meta($post_id, 'cleverpush_notification_sent', true)) {
-                return;
+                $notification_sent_at = get_post_meta(get_the_ID(), 'cleverpush_notification_sent_at', true);
+                if (!empty($notification_sent_at) && (time() - $notification_sent_at) < 60) {
+                    return;
+                }
             }
 
-            $title = !empty(get_bloginfo('name')) ? html_entity_decode(get_bloginfo('name')) : html_entity_decode(get_the_title($post_id));
-            $text = !empty(get_bloginfo('name')) ? html_entity_decode(get_the_title($post_id)) : '';
+            $title = html_entity_decode(get_the_title($post_id));
+            $text = !empty(get_the_excerpt()) ? html_entity_decode(get_the_excerpt()) : '';
             $url = get_permalink($post_id);
 
             if (!empty($_POST['cleverpush_title'])) {
@@ -314,6 +332,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
                 CleverPush_Api::send_notification($title, $text, $url, $options);
                 update_option('cleverpush_notification_result', array('status' => 'success'));
                 update_post_meta($post_id, 'cleverpush_notification_sent', true);
+                update_post_meta($post_id, 'cleverpush_notification_sent_at', time());
 
             } catch (Exception $ex) {
                 update_option('cleverpush_notification_result', array('status' => 'error', 'message' => $ex->getMessage() ));
