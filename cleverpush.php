@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.3
+Version: 0.7.4
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -331,11 +331,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
             try {
                 CleverPush_Api::send_notification($title, $text, $url, $options);
                 update_option('cleverpush_notification_result', array('status' => 'success'));
+                update_option('cleverpush_notification_error', null);
                 update_post_meta($post_id, 'cleverpush_notification_sent', true);
                 update_post_meta($post_id, 'cleverpush_notification_sent_at', time());
 
             } catch (Exception $ex) {
                 update_option('cleverpush_notification_result', array('status' => 'error', 'message' => $ex->getMessage() ));
+                update_option('cleverpush_notification_error', $ex->getMessage());
             }
         }
 
@@ -483,6 +485,20 @@ if ( ! class_exists( 'CleverPush' ) ) :
             </script>
 
             <?php
+            $last_error = get_option('cleverpush_notification_error');
+            update_option('cleverpush_notification_error', null);
+
+            if (!empty($last_error)) {
+                ?>
+
+                <div class="error notice">
+                    <?php
+                    echo $last_error;
+                    ?>
+                </div>
+
+                <?php
+            }
         }
     }
 
