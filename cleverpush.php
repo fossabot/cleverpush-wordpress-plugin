@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.4
+Version: 0.7.5
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -257,17 +257,22 @@ if ( ! class_exists( 'CleverPush' ) ) :
                             }
                         }
 
-                        if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
-                            wp.data.subscribe(function () {
+                        /*
+                        window.addEventListener('load', function() {
+                            if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
                                 console.log('wp.data.subscribe');
-                                var isSavingPost = wp.data.select('core/editor').isSavingPost();
-                                var isAutosavingPost = wp.data.select('core/editor').isAutosavingPost();
-                                console.log('on save', isSavingPost, isAutosavingPost);
-                                if (isSavingPost && !isAutosavingPost && cpCheckbox && cpCheckbox.checked) {
-                                    cpCheckbox.checked = false;
-                                }
-                            });
-                        }
+                                wp.data.subscribe(function () {
+                                    console.log('wp.data.subscribe');
+                                    var isSavingPost = wp.data.select('core/editor').isSavingPost();
+                                    var isAutosavingPost = wp.data.select('core/editor').isAutosavingPost();
+                                    console.log('on save', isSavingPost, isAutosavingPost);
+                                    if (isSavingPost && !isAutosavingPost && cpCheckbox && cpCheckbox.checked) {
+                                        cpCheckbox.checked = false;
+                                    }
+                                });
+                            }
+                        });
+                        */
                     }
                 </script>
 

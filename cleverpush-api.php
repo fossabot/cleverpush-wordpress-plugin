@@ -67,6 +67,6 @@ class CleverPush_Api
             $params['subscriptionId'] = $subscriptionId;
         }
 
-        return CleverPush_Api::request('/notification/sendx', $params);
+        return CleverPush_Api::request('/notification/send', $params);
     }
 }
