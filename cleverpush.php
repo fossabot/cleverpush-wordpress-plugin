@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.5
+Version: 0.7.6
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -20,7 +20,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
     class CleverPush
     {
         /**
-         * Construct the plugin.
+         * varruct the plugin.
          */
         public function __construct()
         {
@@ -230,49 +230,87 @@ if ( ! class_exists( 'CleverPush' ) ) :
                 </div>
 
                 <script>
-                    var cpCheckbox = document.querySelector('input[name="cleverpush_send_notification"]');
-                    var cpContent = document.querySelector('.cleverpush-content');
-                    if (cpCheckbox && cpContent) {
-                        cpCheckbox.addEventListener('change', function (e) {
-                            cpContent.style.display = e.target.checked ? 'block' : 'none';
-                        });
+                    try {
+                        var cpCheckbox = document.querySelector('input[name="cleverpush_send_notification"]');
+                        var cpContent = document.querySelector('.cleverpush-content');
+                        if (cpCheckbox && cpContent) {
+                            cpCheckbox.addEventListener('change', function (e) {
+                                cpContent.style.display = e.target.checked ? 'block' : 'none';
+                            });
 
-                        var cpTopicsRadios = document.querySelectorAll('input[name="cleverpush_use_topics"]');
-                        var cpTopics = document.querySelector('.cleverpush-topics');
-                        if (cpTopicsRadios && cpTopics) {
-                            for (var cpTopicsRadioIndex = 0; cpTopicsRadioIndex < cpTopicsRadios.length; cpTopicsRadioIndex++) {
-                                cpTopicsRadios[cpTopicsRadioIndex].addEventListener('change', function (e) {
-                                    cpTopics.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
-                                });
+                            var cpTopicsRadios = document.querySelectorAll('input[name="cleverpush_use_topics"]');
+                            var cpTopics = document.querySelector('.cleverpush-topics');
+                            if (cpTopicsRadios && cpTopics) {
+                                for (var cpTopicsRadioIndex = 0; cpTopicsRadioIndex < cpTopicsRadios.length; cpTopicsRadioIndex++) {
+                                    cpTopicsRadios[cpTopicsRadioIndex].addEventListener('change', function (e) {
+                                        cpTopics.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
+                                    });
+                                }
                             }
+
+                            var cpSegmentsRadios = document.querySelectorAll('input[name="cleverpush_use_segments"]');
+                            var cpSegments = document.querySelector('.cleverpush-segments');
+                            if (cpSegmentsRadios && cpSegments) {
+                                for (var cpSegmentRadioIndex = 0; cpSegmentRadioIndex < cpSegmentsRadios.length; cpSegmentRadioIndex++) {
+                                    cpSegmentsRadios[cpSegmentRadioIndex].addEventListener('change', function (e) {
+                                        cpSegments.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
+                                    });
+                                }
+                            }
+
+                            // credits: https://rsvpmaker.com/blog/2019/03/31/new-rsvpmaker-form-builder-based-on-gutenberg/
+                            window.addEventListener('load', function() {
+                                if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
+                                    var hasNotice = false;
+
+                                    var wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+                                    var wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+                                    var wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+                                    // determine whether to show notice
+                                    wp.data.subscribe(function() {
+                                        var isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+                                        var isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+                                        var isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+                                        var hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
+
+                                        // Save metaboxes on save completion, except for autosaves that are not a post preview.
+                                        var shouldTriggerTemplateNotice = (
+                                            ( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
+                                            ( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
+                                        );
+
+                                        // Save current state for next inspection.
+                                        wasSavingPost = isSavingPost;
+                                        wasAutosavingPost = isAutosavingPost;
+                                        wasPreviewingPost = isPreviewingPost;
+
+                                        if ( shouldTriggerTemplateNotice ) {
+                                            if (cpCheckbox && cpCheckbox.checked) {
+                                                cpCheckbox.checked = false;
+
+                                                hasNotice = true;
+
+                                                wp.data.dispatch('core/notices').createNotice(
+                                                    'info', // Can be one of: success, info, warning, error.
+                                                    '<?php echo __('The push notification for this post has been successfully sent.', 'cleverpush'); ?>', // Text string to display.
+                                                    {
+                                                        id: 'cleverpush-notification-status', //assigning an ID prevents the notice from being added repeatedly
+                                                        isDismissible: true, // Whether the user can dismiss the notice.
+                                                        // Any actions the user can perform.
+                                                        actions: []
+                                                    }
+                                                );
+                                            } else if (hasNotice) {
+                                                wp.data.dispatch('core/notices').removeNotice('cleverpush-notification-status');
+                                            }
+                                        }
+                                    });
+
+                                }
+                            });
                         }
-
-                        var cpSegmentsRadios = document.querySelectorAll('input[name="cleverpush_use_segments"]');
-                        var cpSegments = document.querySelector('.cleverpush-segments');
-                        if (cpSegmentsRadios && cpSegments) {
-                            for (var cpSegmentRadioIndex = 0; cpSegmentRadioIndex < cpSegmentsRadios.length; cpSegmentRadioIndex++) {
-                                cpSegmentsRadios[cpSegmentRadioIndex].addEventListener('change', function (e) {
-                                    cpSegments.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
-                                });
-                            }
-                        }
-
-                        /*
-                        window.addEventListener('load', function() {
-                            if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
-                                console.log('wp.data.subscribe');
-                                wp.data.subscribe(function () {
-                                    console.log('wp.data.subscribe');
-                                    var isSavingPost = wp.data.select('core/editor').isSavingPost();
-                                    var isAutosavingPost = wp.data.select('core/editor').isAutosavingPost();
-                                    console.log('on save', isSavingPost, isAutosavingPost);
-                                    if (isSavingPost && !isAutosavingPost && cpCheckbox && cpCheckbox.checked) {
-                                        cpCheckbox.checked = false;
-                                    }
-                                });
-                            }
-                        });
-                        */
+                    } catch (err) {
+                        console.error(err);
                     }
                 </script>
 
@@ -348,7 +386,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
         public function save_post($post_id)
         {
-            if ('inline-save' == $_POST['action'] || !current_user_can('edit_post', $post_id))
+            if (isset($_POST['action']) && 'inline-save' == $_POST['action'] || !current_user_can('edit_post', $post_id))
                 return;
 
             $should_send = get_post_status($post_id) != 'publish' ? isset ($_POST['cleverpush_send_notification']) : false;
