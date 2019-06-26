@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.6
+Version: 0.7.7
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -286,7 +286,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
                                         if ( shouldTriggerTemplateNotice ) {
                                             if (cpCheckbox && cpCheckbox.checked) {
-                                                cpCheckbox.checked = false;
+                                                setTimeout(function () {
+                                                    cpCheckbox.checked = false;
+                                                }, 30 * 1000);
 
                                                 hasNotice = true;
 
