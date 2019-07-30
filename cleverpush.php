@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.7
+Version: 0.7.8
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -273,6 +273,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
                                         var isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
                                         var hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
 
+                                        var postStatus = wp.data.select( 'core/editor' ).getEditedPostAttribute( 'status' );
+
                                         // Save metaboxes on save completion, except for autosaves that are not a post preview.
                                         var shouldTriggerTemplateNotice = (
                                             ( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
@@ -284,7 +286,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
                                         wasAutosavingPost = isAutosavingPost;
                                         wasPreviewingPost = isPreviewingPost;
 
-                                        if ( shouldTriggerTemplateNotice ) {
+                                        if ( shouldTriggerTemplateNotice && postStatus === 'publish' ) {
                                             if (cpCheckbox && cpCheckbox.checked) {
                                                 setTimeout(function () {
                                                     cpCheckbox.checked = false;
@@ -388,7 +390,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
         public function save_post($post_id)
         {
-            if (isset($_POST['action']) && 'inline-save' == $_POST['action'] || !current_user_can('edit_post', $post_id))
+            if (!current_user_can('edit_post', $post_id))
                 return;
 
             $should_send = get_post_status($post_id) != 'publish' ? isset ($_POST['cleverpush_send_notification']) : false;
