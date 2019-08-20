@@ -29,6 +29,9 @@ If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
 
+= 0.8.0 =
+* save entered headline + text for draft posts
+
 = 0.7.8 =
 * do not show falsy "notification was sent" message, when saving a draft post
 

@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.7.8
+Version: 0.8.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -158,12 +158,12 @@ if ( ! class_exists( 'CleverPush' ) ) :
                 <div class="cleverpush-content components-base-control" style="display: none; margin-top: 15px;">
                     <div class="components-base-control__field">
                         <label class="components-base-control__label" for="cleverpush_title"><?php _e('Custom headline', 'cleverpush'); ?>:</label>
-                        <div><input type="text" name="cleverpush_title" id="cleverpush_title" style="width: 100%"></div>
+                        <div><input type="text" name="cleverpush_title" id="cleverpush_title" value="<?php echo (!empty(get_post_meta($post->ID, 'cleverpush_title', true)) ? get_post_meta($post->ID, 'cleverpush_title', true) : ''); ?>" style="width: 100%"></div>
                     </div>
 
                     <div class="components-base-control__field">
                         <label class="components-base-control__label" for="cleverpush_text"><?php _e('Custom text', 'cleverpush'); ?>:</label>
-                        <div><input type="text" name="cleverpush_text" id="cleverpush_text" style="width: 100%"></div>
+                        <div><input type="text" name="cleverpush_text" id="cleverpush_text" value="<?php echo (!empty(get_post_meta($post->ID, 'cleverpush_text', true)) ? get_post_meta($post->ID, 'cleverpush_text', true) : ''); ?>" style="width: 100%"></div>
                     </div>
 
                     <?php
@@ -234,6 +234,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
                         var cpCheckbox = document.querySelector('input[name="cleverpush_send_notification"]');
                         var cpContent = document.querySelector('.cleverpush-content');
                         if (cpCheckbox && cpContent) {
+                            cpContent.style.display = cpCheckbox.checked ? 'block' : 'none';
                             cpCheckbox.addEventListener('change', function (e) {
                                 cpContent.style.display = e.target.checked ? 'block' : 'none';
                             });
@@ -395,6 +396,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
             $should_send = get_post_status($post_id) != 'publish' ? isset ($_POST['cleverpush_send_notification']) : false;
             update_post_meta($post_id, 'cleverpush_send_notification', $should_send);
+
+            update_post_meta($post_id, 'cleverpush_title', $_POST['cleverpush_title']);
+            update_post_meta($post_id, 'cleverpush_text', $_POST['cleverpush_text']);
         }
 
         public function notices()
