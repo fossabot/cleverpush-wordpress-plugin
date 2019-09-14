@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.8.0
+Version: 0.8.1
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -477,7 +477,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
             <div class="wrap">
                 <h2>CleverPush</h2>
                 <p><?php echo sprintf(__('You need to have a %s account with an already set up channel to use this plugin. Please then select your channel below.', 'cleverpush'), '<a target="_blank" href="https://cleverpush.com/">CleverPush</a>'); ?></p>
-                <p><?php echo sprintf(__('The API keys can be found in the %s.', 'cleverpush'), '<a href="https://cleverpush.com/app/settings/api" target="_blank">' . __('API settings', 'cleverpush') . '</a>'); ?></p>
+                <p><?php echo sprintf(__('The API key can be found in the %s.', 'cleverpush'), '<a href="https://cleverpush.com/app/settings/api" target="_blank">' . __('API settings', 'cleverpush') . '</a>'); ?></p>
 
                 <form method="post" action="options.php">
                     <input type="hidden" name="cleverpush_channel_subdomain" value="<?php echo get_option('cleverpush_channel_subdomain'); ?>">
@@ -510,11 +510,15 @@ if ( ! class_exists( 'CleverPush' ) ) :
                                 <?php } ?>
                             </td>
                         </tr>
+
+                        <!--
                         <tr valign="top">
                             <th scope="row"><?php _e('Public API-Key', 'cleverpush'); ?></th>
                             <td><input type="text" name="cleverpush_apikey_public"
                                        value="<?php echo get_option('cleverpush_apikey_public'); ?>" style="width: 320px;"/></td>
                         </tr>
+                        -->
+
                         <tr valign="top">
                             <th scope="row"><?php _e('Private API-Key', 'cleverpush'); ?></th>
                             <td><input type="text" name="cleverpush_apikey_private"

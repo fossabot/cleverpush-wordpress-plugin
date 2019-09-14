@@ -86,8 +86,8 @@ msgstr ""
 
 #: cleverpush.php:411
 #, php-format
-msgid "The API keys can be found in the %s."
-msgstr "Die API-Keys können in den %s gefunden werden."
+msgid "The API key can be found in the %s."
+msgstr "Der API-Key kann in den %s gefunden werden."
 
 #: cleverpush.php:411
 msgid "API settings"
