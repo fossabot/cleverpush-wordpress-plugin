@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 0.9.0
+Version: 1.0.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -28,6 +28,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			add_action('wp_head', array($this, 'javascript'), 20);
 			add_action('admin_menu', array($this, 'plugin_menu'));
 			add_action('admin_init', array($this, 'register_settings'));
+			add_action('init', array($this, 'register_post_types'));
 			add_action('admin_notices', array($this, 'warn_nosettings'));
 			add_action('add_meta_boxes', array($this, 'create_metabox'));
 			add_action('save_post', array($this, 'save_post'), 10, 2);
@@ -38,6 +39,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 			add_action('wp_ajax_cleverpush_subscription_id', array($this, 'set_subscription_id'));
 			add_action('wp_ajax_nopriv_cleverpush_subscription_id', array($this, 'set_subscription_id'));
+
+			add_action('single_template', array($this, 'cleverpush_story_template' ), 20, 1 );
+			add_action('frontpage_template', array($this, 'cleverpush_story_template' ), 11 );
 
 			add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this, 'plugin_add_settings_link'));
 
@@ -54,7 +58,6 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		 */
 		public function init()
 		{
-
 		}
 
 		public function warn_nosettings()
@@ -68,6 +71,179 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			}
 		}
 
+		public function register_post_types() {
+			$labels = array(
+				'menu_name' => _x('CP Stories', 'post type general name', 'cleverpush'),
+				'name' => _x('CleverPush Stories', 'post type general name', 'cleverpush'),
+				'singular_name' => _x('Story', 'post type singular name', 'cleverpush'),
+				'add_new' => _x('Neue Story', 'portfolio item', 'cleverpush'),
+				'add_new_item' => __('Neue Story hinzufügen', 'cleverpush'),
+				'edit_item' => __('Story bearbeiten', 'cleverpush'),
+				'new_item' => __('Neue Story', 'cleverpush'),
+				'view_item' => __('Story ansehen', 'cleverpush'),
+				'search_items' => __('Stories suchen', 'cleverpush'),
+				'not_found' =>  __('Nichts gefunden', 'cleverpush'),
+				'not_found_in_trash' => __('Nichts gefunden', 'cleverpush'),
+				'parent_item_colon' => '',
+				'all_items' =>  __('Stories', 'cleverpush'),
+			);
+
+			$args = array(
+				'labels' => $labels,
+				'public' => true,
+				'show_ui' => true,
+				'capability_type' => 'post',
+				'hierarchical' => false,
+				'menu_position' => null,
+				'supports' => false,
+				'rewrite' => array('slug' => 'projects'),
+			);
+
+			register_post_type( 'cleverpush_story' , $args );
+		}
+
+		public function cleverpush_story_id_meta() {
+			?>
+
+			<div class="wrap">
+				<table class="form-table">
+
+					<?php
+					global $post;
+					$custom = get_post_custom($post->ID);
+					$apiKey = get_option('cleverpush_apikey_private');
+					$channelId = get_option('cleverpush_channel_id');
+					$cleverpushStoryId = $custom["cleverpush_story_id"][0];
+					$fetchTime = get_transient('cleverpush_' . $cleverpushStoryId . '_time');
+
+					if (!empty($apiKey))
+					{
+						$response = wp_remote_get( 'https://api.cleverpush.com/channel/' . $channelId . '/stories', array( 'headers' => array( 'Authorization' => $apiKey ) ) );
+						if (is_wp_error($response)) {
+							?>
+							<div class="error notice">
+								<p><?php echo $response->get_error_message(); ?></p>
+							</div>
+							<?php
+						}
+						else if ($response['response']['code'] == 200 && isset($response['body']))
+						{
+							$stories = json_decode($response['body'])->stories;
+							if ($stories && count($stories) > 0)
+							{
+								?>
+
+								<tr valign="top">
+									<th scope="row">Story auswählen</th>
+									<td>
+										<select name="cleverpush_story_id">
+											<?php
+											echo '<option value="" disabled' . (empty($cleverpushStoryId) ? ' selected' : '') . '>Bitte Story auswählen…</option>';
+											foreach ( $stories as $cleverpush ) {
+												echo '<option value="' . $cleverpush->_id . '"' . ($cleverpushStoryId == $cleverpush->_id ? ' selected' : '') . '>' . $cleverpush->title . '</option>';
+											}
+											?>
+										</select>
+									</td>
+								</tr>
+
+								<?php
+							}
+							else
+							{
+								echo '<div class="error notice"><p>Es wurden keine CleverPush Stories gefunden.</p></div>';
+							}
+						}
+						else if (!empty($response['response'])) {
+							echo '<div class="error notice"><p>API Error: ' . $response['response']['message'] . '</p></div>';
+						}
+					}
+
+					?>
+
+					<tr valign="top">
+						<th scope="row">Story Path</th>
+						<td>
+							<input type="text" name="post_name" value="<?php echo $post->post_name; ?>" class="regular-text" />
+						</td>
+					</tr>
+
+					<tr valign="top">
+						<th scope="row">Zwischenspeicher</th>
+						<td>
+							<p class="text-muted">Die Inhalte deiner Stories werden alle 30 Minuten neu von den CleverPush Servern geladen. Hier kannst du den Zwischenspeicher dafür leeren:</p>
+							<!--
+						<?php if (!empty($cleverpushId) && !empty($fetchTime)) { ?>
+							<p>Zuletzt geladen: <strong><?php echo date('d.m.Y H:i', $fetchTime); ?></strong></p>
+						<?php } ?>
+						-->
+							<br />
+							<p><?php submit_button( 'Zwischenspeicher leeren', 'primary', 'clear_cache', false ); ?></p>
+						</td>
+					</tr>
+
+				</table>
+			</div>
+
+			<?php
+		}
+
+		public function save_cleverpush_meta($post_id, $post) {
+			// Is the user allowed to edit the post or page?
+			if ( !current_user_can( 'edit_post', $post->ID ))
+				return $post->ID;
+
+			if (isset($_POST['clear_cache']) && !empty($_POST['cleverpush_story_id'])) {
+				delete_transient('cleverpush_' . sanitize_text_field($_POST['cleverpush_story_id']) . '_content');
+				delete_transient('cleverpush_' . sanitize_text_field($_POST['cleverpush_story_id']) . '_time');
+			}
+
+			// OK, we're authenticated: we need to find and save the data
+			// We'll put it into an array to make it easier to loop though.
+
+			$meta = array(
+				'cleverpush_story_id' => sanitize_text_field($_POST['cleverpush_story_id']),
+			);
+
+			// Add values of $events_meta as custom fields
+
+			foreach ($meta as $key => $value) { // Cycle through the $events_meta array!
+				if ( $post->post_type == 'revision' ) return; // Don't store custom data twice
+				$value = implode(',', (array)$value); // If $value is an array, make it a CSV (unlikely)
+				if (get_post_meta($post->ID, $key, FALSE)) { // If the custom field already has a value
+					update_post_meta($post->ID, $key, $value);
+				} else { // If the custom field doesn't have a value
+					add_post_meta($post->ID, $key, $value);
+				}
+				if (!$value) delete_post_meta($post->ID, $key); // Delete if blank
+			}
+
+			// prevent infinite loop
+			remove_action('save_post', array( &$this, 'save_cleverpush_meta' ), 1 );
+
+			if (!empty($_POST['post_title']) && empty($_POST['post_name'])) {
+				$new_slug = sanitize_title( $_POST['post_title'] );
+				if ( $post->post_name != $new_slug )
+				{
+					wp_update_post(
+						array (
+							'ID'        => $post->ID,
+							'post_name' => $new_slug
+						)
+					);
+				}
+			}
+
+			if ($post->post_type === 'cleverpush_story' && !empty($_POST['post_name'])) {
+				wp_update_post(
+					array (
+						'ID'        => $post->ID,
+						'post_title' => $_POST['post_name']
+					)
+				);
+			}
+		}
+
 		public function plugin_add_settings_link($links)
 		{
 			$settings_link = '<a href="options-general.php?page=cleverpush_options">' . __( 'Settings' ) . '</a>';
@@ -78,6 +254,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		function ajax_load_options() {
 			$selected_channel_id = get_option('cleverpush_channel_id');
 			$api_key_private = get_option('cleverpush_apikey_private');
+			$cleverpush_topics_required = false;
+			$cleverpush_segments_required = false;
 
 			if (!empty($api_key_private) && !empty($selected_channel_id)) {
 				$cleverpush_segments = array();
@@ -101,6 +279,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					$data = json_decode($body);
 					if (isset($data->segments)) {
 						$cleverpush_segments = $data->segments;
+					}
+					if (isset($data->segmentsRequiredField) && $data->segmentsRequiredField) {
+						$cleverpush_segments_required = true;
 					}
 				}
 
@@ -126,6 +307,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					if (isset($data->topics)) {
 						$cleverpush_topics = $data->topics;
 					}
+					if (isset($data->topicsRequiredField) && $data->topicsRequiredField) {
+						$cleverpush_topics_required = true;
+					}
 				}
 
 				?>
@@ -147,7 +331,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						</div>
 					</div>
 					<div class="components-base-control__field cleverpush-topics"
-						 style="display: none; margin-left: 30px;">
+						 style="display: none; margin-left: 30px;" data-required="<?php echo $cleverpush_topics_required ? 'true' : 'false'; ?>">
 						<?php
 						foreach ($cleverpush_topics as $topic) {
 							?>
@@ -183,7 +367,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						</div>
 					</div>
 					<div class="components-base-control__field cleverpush-segments"
-						 style="display: none; margin-left: 30px;">
+						 style="display: none; margin-left: 30px;" data-required="<?php echo $cleverpush_segments_required ? 'true' : 'false'; ?>">
 						<?php
 						foreach ($cleverpush_segments as $segment) {
 							?>
@@ -223,6 +407,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		public function create_metabox()
 		{
 			add_meta_box('cleverpush-metabox', 'CleverPush', array($this, 'metabox'), 'post', 'side', 'high');
+			add_meta_box('cleverpush_story_id_meta', 'CleverPush Story', array(&$this, 'cleverpush_story_id_meta'), 'cleverpush_story', 'normal', 'default');
 		}
 
 		public function metabox($post)
@@ -335,43 +520,99 @@ if ( ! class_exists( 'CleverPush' ) ) :
 									});
 
 								}
+
+								var request = new XMLHttpRequest();
+								request.onreadystatechange = function() {
+									if (request.readyState === XMLHttpRequest.DONE) {
+										var cpContent = document.getElementsByClassName('cleverpush-content')[0];
+										if (cpContent) {
+											var ajaxContent = document.createElement('div');
+											ajaxContent.innerHTML = request.responseText;
+											cpContent.appendChild(ajaxContent);
+
+											var cpTopicsRadios = document.querySelectorAll('input[name="cleverpush_use_topics"]');
+											var cpTopics = document.querySelector('.cleverpush-topics');
+											var topicsRequired = false;
+											if (cpTopicsRadios && cpTopics) {
+												topicsRequired = cpTopics.dataset.required === 'true';
+												for (var cpTopicsRadioIndex = 0; cpTopicsRadioIndex < cpTopicsRadios.length; cpTopicsRadioIndex++) {
+													cpTopicsRadios[cpTopicsRadioIndex].addEventListener('change', function (e) {
+														cpTopics.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
+													});
+												}
+											}
+
+											var cpSegmentsRadios = document.querySelectorAll('input[name="cleverpush_use_segments"]');
+											var cpSegments = document.querySelector('.cleverpush-segments');
+											var segmentsRequired = false;
+											if (cpSegmentsRadios && cpSegments) {
+												segmentsRequired = cpSegments.dataset.required === 'true';
+												for (var cpSegmentRadioIndex = 0; cpSegmentRadioIndex < cpSegmentsRadios.length; cpSegmentRadioIndex++) {
+													cpSegmentsRadios[cpSegmentRadioIndex].addEventListener('change', function (e) {
+														cpSegments.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
+													});
+												}
+											}
+
+											if (topicsRequired || segmentsRequired) {
+												var topicsLocked = false;
+												var segmentsLocked = false;
+
+												var registerPlugin = wp.plugins.registerPlugin;
+												var PluginPrePublishPanel = wp.editPost.PluginPrePublishPanel;
+
+												var PrePublishCleverPush = function() {
+													if ( cpCheckbox && cpCheckbox.checked ) {
+														var topicsChecked = false;
+														if (topicsRequired) {
+															var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
+															for (var i = 0; i < topics.length; i++) {
+																if (topics[i].checked) {
+																	topicsChecked = true;
+																}
+															}
+															if (!topicsChecked && !topicsLocked) {
+																topicsLocked = true;
+																wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushTopics' );
+															} else if (topicsChecked && topicsLocked) {
+																topicsLocked = false;
+																wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushTopics' );
+															}
+														}
+
+														var segmentsChecked = false;
+														if (segmentsRequired) {
+															var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
+															for (var i = 0; i < segments.length; i++) {
+																if (segments[i].checked) {
+																	segmentsChecked = true;
+																}
+															}
+															if (!segmentsChecked && !segmentsLocked) {
+																segmentsLocked = true;
+																wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushSegments' );
+															} else if (segmentsChecked && segmentsLocked) {
+																segmentsLocked = false;
+																wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushSegments' );
+															}
+														}
+													}
+
+													return React.createElement(PluginPrePublishPanel, {
+														title: 'CleverPush'
+													}, topicsRequired && !topicsChecked ? React.createElement("p", null, "Bitte Themenbereiche ausw\xE4hlen") : null, segmentsRequired && !segmentsChecked ? React.createElement("p", null, "Bitte Segmente ausw\xE4hlen") : null);
+												};
+
+												registerPlugin( 'pre-publish-checklist', { render: PrePublishCleverPush } );
+											}
+										}
+									}
+								};
+								request.open('POST', ajaxurl, true);
+								request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+								request.send('action=cleverpush_send_options');
 							});
 						}
-
-						var request = new XMLHttpRequest();
-						request.onreadystatechange = function() {
-							if (request.readyState === XMLHttpRequest.DONE) {
-								var cpContent = document.getElementsByClassName('cleverpush-content')[0];
-								if (cpContent) {
-									var ajaxContent = document.createElement('div');
-									ajaxContent.innerHTML = request.responseText;
-									cpContent.appendChild(ajaxContent);
-
-									var cpTopicsRadios = document.querySelectorAll('input[name="cleverpush_use_topics"]');
-									var cpTopics = document.querySelector('.cleverpush-topics');
-									if (cpTopicsRadios && cpTopics) {
-										for (var cpTopicsRadioIndex = 0; cpTopicsRadioIndex < cpTopicsRadios.length; cpTopicsRadioIndex++) {
-											cpTopicsRadios[cpTopicsRadioIndex].addEventListener('change', function (e) {
-												cpTopics.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
-											});
-										}
-									}
-
-									var cpSegmentsRadios = document.querySelectorAll('input[name="cleverpush_use_segments"]');
-									var cpSegments = document.querySelector('.cleverpush-segments');
-									if (cpSegmentsRadios && cpSegments) {
-										for (var cpSegmentRadioIndex = 0; cpSegmentRadioIndex < cpSegmentsRadios.length; cpSegmentRadioIndex++) {
-											cpSegmentsRadios[cpSegmentRadioIndex].addEventListener('change', function (e) {
-												cpSegments.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
-											});
-										}
-									}
-								}
-							}
-						};
-						request.open('POST', ajaxurl, true);
-						request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-						request.send('action=cleverpush_send_options');
 					} catch (err) {
 						console.error(err);
 					}
@@ -476,7 +717,6 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			update_option('cleverpush_notification_result', null);
 		}
 
-
 		public function plugin_menu()
 		{
 			add_options_page('CleverPush', 'CleverPush', 'create_users', 'cleverpush_options', array($this, 'plugin_options'));
@@ -504,8 +744,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		{
 			$channels = array();
 			$selected_channel_id = get_option('cleverpush_channel_id');
-
 			$api_key_private = get_option('cleverpush_apikey_private');
+
 			if (!empty($api_key_private)) {
 				$response = wp_remote_get( CLEVERPUSH_API_ENDPOINT . '/channels', array(
 						'timeout' => 10,
@@ -526,6 +766,55 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					$data = json_decode( $body );
 					if (isset($data->channels)) {
 						$channels = $data->channels;
+					}
+				}
+
+				if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['cleverpush_action'] == 'synchronize_stories') {
+					$response = wp_remote_get('https://api.cleverpush.com/channel/' . $selected_channel_id . '/stories', array('headers' => array('Authorization' => $api_key_private)));
+					if ( is_wp_error( $response ) ) {
+						?>
+						<div class="error notice">
+							<p><?php echo $response->get_error_message(); ?></p>
+						</div>
+						<?php
+					} else if ($response['response']['code'] == 200 && isset($response['body'])) {
+						$stories = json_decode($response['body'])->stories;
+						if ($stories && count($stories) > 0) {
+							foreach ($stories as $story) {
+								$args = array(
+									'meta_query' => array(
+										array(
+											'key' => 'cleverpush_story_id',
+											'value' => $story->_id
+										)
+									),
+									'post_type' => 'cleverpush_story'
+								);
+								$existing_posts = get_posts($args);
+
+								if (count($existing_posts) < 1) {
+									$post_id = wp_insert_post(array(
+										'post_title' => $story->title,
+										'post_name' => $story->title,
+										'post_type' => 'cleverpush_story',
+										'post_status' => 'publish'
+									));
+									if ($post_id) {
+										add_post_meta($post_id, 'cleverpush_story_id', $story->_id);
+									}
+								}
+							}
+
+							?>
+
+							<div class="notice updated"><p>Die Stories wurden erfolgreich synchronisiert.</p></div>
+
+							<?php
+						} else {
+							echo '<div class="error notice"><p>Es wurden keine CleverPush Stories gefunden.</p></div>';
+						}
+					} else if (!empty($response['response'])) {
+						echo '<div class="error notice"><p>API Error: ' . $response['response']['message'] . '</p></div>';
 					}
 				}
 			}
@@ -569,14 +858,6 @@ if ( ! class_exists( 'CleverPush' ) ) :
 							</td>
 						</tr>
 
-						<!--
-                        <tr valign="top">
-                            <th scope="row"><?php _e('Public API-Key', 'cleverpush'); ?></th>
-                            <td><input type="text" name="cleverpush_apikey_public"
-                                       value="<?php echo get_option('cleverpush_apikey_public'); ?>" style="width: 320px;"/></td>
-                        </tr>
-                        -->
-
 						<tr valign="top">
 							<th scope="row"><?php _e('Private API-Key', 'cleverpush'); ?></th>
 							<td><input type="text" name="cleverpush_apikey_private"
@@ -588,6 +869,16 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					<p class="submit"><input type="submit" class="button-primary"
 											 value="<?php _e('Save Changes', 'cleverpush') ?>"/></p>
 				</form>
+
+				<?php if (!empty($api_key_private)): ?>
+					<hr />
+					<br />
+
+					<form method="post" action="">
+						<input type="hidden" name="cleverpush_action" value="synchronize_stories">
+						<p class="submit"><input type="submit" class="button-secondary" value="CleverPush Stories synchronisieren" /></p>
+					</form>
+				<?php endif; ?>
 			</div>
 
 			<script>
@@ -612,6 +903,51 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 				<?php
 			}
+		}
+
+		public function cleverpush_story_template($single) {
+			global $post;
+
+			if ($post->post_type == 'cleverpush_story') {
+				remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+				remove_action( 'wp_print_styles', 'print_emoji_styles' );
+				remove_action( 'wp_head', 'rest_output_link_wp_head' );
+				remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
+				remove_action( 'template_redirect', 'rest_output_link_header', 11, 0 );
+				remove_action( 'wp_head', 'wp_generator' );
+				remove_action( 'wp_head', 'rsd_link' );
+				remove_action( 'wp_head', 'wlwmanifest_link');
+				remove_theme_support( 'automatic-feed-links' );
+				add_theme_support( 'title-tag' );
+				add_filter('show_admin_bar', '__return_false');
+
+				$cleverpushId = get_post_meta($post->ID, 'cleverpush_story_id', true);
+				$cleverpushContent = get_transient( 'cleverpush_story_' . $cleverpushId . '_content' );
+				$cleverpushTime = get_transient( 'cleverpush_story_' . $cleverpushId . '_time' );
+				$apiKey = get_option('cleverpush_apikey_private');
+				$channelId = get_option('cleverpush_channel_id');
+
+				if ( false === $cleverpushContent || ($cleverpushTime < (time() - (60 * 30))) ) {
+					$response = wp_remote_get( 'https://api.cleverpush.com/channel/' . $channelId . '/story/' . $cleverpushId, array( 'headers' => array( 'Authorization' => $apiKey )) );
+					if ($response['response']['code'] == 200 && isset($response['body'])) {
+						$story = json_decode($response['body']);
+						$cleverpushTime = time();
+						$cleverpushContent = $story->code . "\n<!-- cache time: " . date('Y-m-d H:m:s', $cleverpushTime) . " -->";
+						set_transient( 'cleverpush_story_' . $cleverpushId . '_content', $cleverpushContent, 60 * 60 * 24 * 3 );
+						set_transient( 'cleverpush_story_' . $cleverpushId . '_time', $cleverpushTime, 60 * 30 );
+					}
+				}
+
+				add_action('wp_head', function() use ($cleverpushContent) {
+					echo preg_replace("#</?(head)[^>]*>#i", "", $cleverpushContent);
+				});
+
+				$path = plugin_dir_path( __FILE__ ) . 'public/story-template.php';
+				if (file_exists($path)) {
+					return $path;
+				}
+			}
+			return $single;
 		}
 	}
 
