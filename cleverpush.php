@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.0.0
+Version: 1.0.1
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -66,7 +66,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				return;
 			}
 
-			if (empty(get_option('cleverpush_channel_id')) || empty(get_option('cleverpush_channel_subdomain'))) {
+			if (empty(get_option('cleverpush_channel_id'))) {
 				echo '<div class="updated fade"><p><strong>' . __('CleverPush is almost ready.', 'cleverpush') . '</strong> ' . sprintf(__('You have to select a channel in the %s to get started.', 'cleverpush'), '<a href="options-general.php?page=cleverpush_options">' . __('settings', 'cleverpush') . '</a>') . '</p></div>';
 			}
 		}
@@ -555,55 +555,94 @@ if ( ! class_exists( 'CleverPush' ) ) :
 											}
 
 											if (topicsRequired || segmentsRequired) {
-												var topicsLocked = false;
-												var segmentsLocked = false;
+											    if (typeof wp !== 'undefined' && wp.plugins && wp.plugins.registerPlugin && wp.editPost && wp.editPost.PluginPrePublishPanel) {
+                                                    var topicsLocked = false;
+                                                    var segmentsLocked = false;
 
-												var registerPlugin = wp.plugins.registerPlugin;
-												var PluginPrePublishPanel = wp.editPost.PluginPrePublishPanel;
+                                                    var registerPlugin = wp.plugins.registerPlugin;
+                                                    var PluginPrePublishPanel = wp.editPost.PluginPrePublishPanel;
 
-												var PrePublishCleverPush = function() {
-													if ( cpCheckbox && cpCheckbox.checked ) {
-														var topicsChecked = false;
-														if (topicsRequired) {
-															var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
-															for (var i = 0; i < topics.length; i++) {
-																if (topics[i].checked) {
-																	topicsChecked = true;
-																}
-															}
-															if (!topicsChecked && !topicsLocked) {
-																topicsLocked = true;
-																wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushTopics' );
-															} else if (topicsChecked && topicsLocked) {
-																topicsLocked = false;
-																wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushTopics' );
-															}
-														}
+                                                    var PrePublishCleverPush = function() {
+                                                        if ( cpCheckbox && cpCheckbox.checked ) {
+                                                            var topicsChecked = false;
+                                                            if (topicsRequired) {
+                                                                var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
+                                                                for (var i = 0; i < topics.length; i++) {
+                                                                    if (topics[i].checked) {
+                                                                        topicsChecked = true;
+                                                                    }
+                                                                }
+                                                                if (!topicsChecked && !topicsLocked) {
+                                                                    topicsLocked = true;
+                                                                    wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushTopics' );
+                                                                } else if (topicsChecked && topicsLocked) {
+                                                                    topicsLocked = false;
+                                                                    wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushTopics' );
+                                                                }
+                                                            }
 
-														var segmentsChecked = false;
-														if (segmentsRequired) {
-															var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
-															for (var i = 0; i < segments.length; i++) {
-																if (segments[i].checked) {
-																	segmentsChecked = true;
-																}
-															}
-															if (!segmentsChecked && !segmentsLocked) {
-																segmentsLocked = true;
-																wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushSegments' );
-															} else if (segmentsChecked && segmentsLocked) {
-																segmentsLocked = false;
-																wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushSegments' );
-															}
-														}
-													}
+                                                            var segmentsChecked = false;
+                                                            if (segmentsRequired) {
+                                                                var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
+                                                                for (var i = 0; i < segments.length; i++) {
+                                                                    if (segments[i].checked) {
+                                                                        segmentsChecked = true;
+                                                                    }
+                                                                }
+                                                                if (!segmentsChecked && !segmentsLocked) {
+                                                                    segmentsLocked = true;
+                                                                    wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushSegments' );
+                                                                } else if (segmentsChecked && segmentsLocked) {
+                                                                    segmentsLocked = false;
+                                                                    wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushSegments' );
+                                                                }
+                                                            }
+                                                        }
 
-													return React.createElement(PluginPrePublishPanel, {
-														title: 'CleverPush'
-													}, topicsRequired && !topicsChecked ? React.createElement("p", null, "Bitte Themenbereiche ausw\xE4hlen") : null, segmentsRequired && !segmentsChecked ? React.createElement("p", null, "Bitte Segmente ausw\xE4hlen") : null);
-												};
+                                                        return React.createElement(PluginPrePublishPanel, {
+                                                            title: 'CleverPush'
+                                                        }, topicsRequired && !topicsChecked ? React.createElement("p", null, "Bitte Themenbereiche ausw\xE4hlen") : null, segmentsRequired && !segmentsChecked ? React.createElement("p", null, "Bitte Segmente ausw\xE4hlen") : null);
+                                                    };
 
-												registerPlugin( 'pre-publish-checklist', { render: PrePublishCleverPush } );
+                                                    registerPlugin( 'pre-publish-checklist', { render: PrePublishCleverPush } );
+                                                } else {
+                                                    var publish = document.getElementById('publish');
+                                                    if (publish) {
+                                                        publish.addEventListener('click', function(e) {
+                                                            if ( cpCheckbox && cpCheckbox.checked ) {
+                                                                var topicsChecked = false;
+                                                                if (topicsRequired) {
+                                                                    var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
+                                                                    for (var i = 0; i < topics.length; i++) {
+                                                                        if (topics[i].checked) {
+                                                                            topicsChecked = true;
+                                                                        }
+                                                                    }
+                                                                    if (!topicsChecked) {
+                                                                        e.preventDefault();
+                                                                        alert('CleverPush: Bitte Themenbereiche auswählen');
+                                                                        return;
+                                                                    }
+                                                                }
+
+                                                                var segmentsChecked = false;
+                                                                if (segmentsRequired) {
+                                                                    var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
+                                                                    for (var i = 0; i < segments.length; i++) {
+                                                                        if (segments[i].checked) {
+                                                                            segmentsChecked = true;
+                                                                        }
+                                                                    }
+                                                                    if (!segmentsChecked) {
+                                                                        e.preventDefault();
+                                                                        alert('CleverPush: Bitte Segmente auswählen');
+                                                                        return;
+                                                                    }
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                }
 											}
 										}
 									}
@@ -696,8 +735,12 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			$should_send = get_post_status($post_id) != 'publish' ? isset ($_POST['cleverpush_send_notification']) : false;
 			update_post_meta($post_id, 'cleverpush_send_notification', $should_send);
 
-			update_post_meta($post_id, 'cleverpush_title', $_POST['cleverpush_title']);
-			update_post_meta($post_id, 'cleverpush_text', $_POST['cleverpush_text']);
+			if (isset($_POST['cleverpush_title'])) {
+                update_post_meta($post_id, 'cleverpush_title', $_POST['cleverpush_title']);
+            }
+			if (isset($_POST['cleverpush_text'])) {
+                update_post_meta($post_id, 'cleverpush_text', $_POST['cleverpush_text']);
+            }
 		}
 
 		public function notices()
