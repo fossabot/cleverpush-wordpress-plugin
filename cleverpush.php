@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.0.1
+Version: 1.0.2
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -51,6 +51,19 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				false,
 				dirname(plugin_basename(__FILE__)) . '/languages/'
 			);
+
+			register_activation_hook( __FILE__, array($this, 'cleverpush_activate') );
+			register_deactivation_hook( __FILE__, array($this, 'cleverpush_deactivate') );
+		}
+
+		function cleverpush_activate() {
+			if ( ! get_option( 'cleverpush_flush_rewrite_rules_flag' ) ) {
+				add_option( 'cleverpush_flush_rewrite_rules_flag', true );
+			}
+		}
+
+		function cleverpush_deactivate() {
+			flush_rewrite_rules();
 		}
 
 		/**
@@ -96,10 +109,15 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				'hierarchical' => false,
 				'menu_position' => null,
 				'supports' => false,
-				'rewrite' => array('slug' => 'projects'),
+				'rewrite' => array('slug' => 'cleverpush-stories','with_front' => false),
 			);
 
 			register_post_type( 'cleverpush_story' , $args );
+
+			if ( get_option( 'cleverpush_flush_rewrite_rules_flag' ) ) {
+				flush_rewrite_rules();
+				delete_option( 'cleverpush_flush_rewrite_rules_flag' );
+			}
 		}
 
 		public function cleverpush_story_id_meta() {
