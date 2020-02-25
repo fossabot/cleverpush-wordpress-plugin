@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.0.2
+Version: 1.0.3
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -34,6 +34,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			add_action('save_post', array($this, 'save_post'), 10, 2);
 			add_action('admin_notices', array($this, 'notices'));
 			add_action('publish_post', array($this, 'publish_post'), 10, 1);
+			add_action('admin_enqueue_scripts', array($this, 'load_admin_style') );
 
 			add_action('wp_ajax_cleverpush_send_options', array($this, 'ajax_load_options'));
 
@@ -64,6 +65,10 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 		function cleverpush_deactivate() {
 			flush_rewrite_rules();
+		}
+
+		function load_admin_style() {
+			wp_enqueue_style( 'admin_css', plugin_dir_url( __FILE__ ) . 'assets/cleverpush-admin.css', false, '1.0.0' );
 		}
 
 		/**
@@ -371,8 +376,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				if (!empty($cleverpush_segments) && count($cleverpush_segments) > 0) {
 					?>
 					<div class="components-base-control__field">
-						<label class="components-base-control__label"><?php _e('Segments', 'cleverpush'); ?>
-							:</label>
+						<label class="components-base-control__label"><?php _e('Segments', 'cleverpush'); ?>:</label>
 						<div>
 							<div>
 								<label><input name="cleverpush_use_segments" type="radio" value="0"
@@ -471,22 +475,23 @@ if ( ! class_exists( 'CleverPush' ) ) :
 									style="width: 100%"></div>
 					</div>
 
+					<div class="cleverpush-loading-container">
+						<div class="cleverpush-loading"></div>
+					</div>
 				</div>
 
 				<script>
 					try {
 						var cpCheckbox = document.querySelector('input[name="cleverpush_send_notification"]');
 						var cpContent = document.querySelector('.cleverpush-content');
+						var cpLoading = document.querySelector('.cleverpush-loading-container');
 						if (cpCheckbox && cpContent) {
 							cpContent.style.display = cpCheckbox.checked ? 'block' : 'none';
 							cpCheckbox.addEventListener('change', function (e) {
 								cpContent.style.display = e.target.checked ? 'block' : 'none';
 							});
 
-
-
-							// credits: https://rsvpmaker.com/blog/2019/03/31/new-rsvpmaker-form-builder-based-on-gutenberg/
-							window.addEventListener('load', function () {
+							var initCleverPush = function () {
 								if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
 									var hasNotice = false;
 
@@ -536,17 +541,19 @@ if ( ! class_exists( 'CleverPush' ) ) :
 											}
 										}
 									});
-
 								}
 
 								var request = new XMLHttpRequest();
 								request.onreadystatechange = function() {
 									if (request.readyState === XMLHttpRequest.DONE) {
-										var cpContent = document.getElementsByClassName('cleverpush-content')[0];
 										if (cpContent) {
 											var ajaxContent = document.createElement('div');
 											ajaxContent.innerHTML = request.responseText;
 											cpContent.appendChild(ajaxContent);
+
+											if (cpLoading) {
+												cpLoading.style.display = 'none';
+											}
 
 											var cpTopicsRadios = document.querySelectorAll('input[name="cleverpush_use_topics"]');
 											var cpTopics = document.querySelector('.cleverpush-topics');
@@ -573,94 +580,94 @@ if ( ! class_exists( 'CleverPush' ) ) :
 											}
 
 											if (topicsRequired || segmentsRequired) {
-											    if (typeof wp !== 'undefined' && wp.plugins && wp.plugins.registerPlugin && wp.editPost && wp.editPost.PluginPrePublishPanel) {
-                                                    var topicsLocked = false;
-                                                    var segmentsLocked = false;
+												if (typeof wp !== 'undefined' && wp.plugins && wp.plugins.registerPlugin && wp.editPost && wp.editPost.PluginPrePublishPanel) {
+													var topicsLocked = false;
+													var segmentsLocked = false;
 
-                                                    var registerPlugin = wp.plugins.registerPlugin;
-                                                    var PluginPrePublishPanel = wp.editPost.PluginPrePublishPanel;
+													var registerPlugin = wp.plugins.registerPlugin;
+													var PluginPrePublishPanel = wp.editPost.PluginPrePublishPanel;
 
-                                                    var PrePublishCleverPush = function() {
-                                                        if ( cpCheckbox && cpCheckbox.checked ) {
-                                                            var topicsChecked = false;
-                                                            if (topicsRequired) {
-                                                                var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
-                                                                for (var i = 0; i < topics.length; i++) {
-                                                                    if (topics[i].checked) {
-                                                                        topicsChecked = true;
-                                                                    }
-                                                                }
-                                                                if (!topicsChecked && !topicsLocked) {
-                                                                    topicsLocked = true;
-                                                                    wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushTopics' );
-                                                                } else if (topicsChecked && topicsLocked) {
-                                                                    topicsLocked = false;
-                                                                    wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushTopics' );
-                                                                }
-                                                            }
+													var PrePublishCleverPush = function() {
+														if ( cpCheckbox && cpCheckbox.checked ) {
+															var topicsChecked = false;
+															if (topicsRequired) {
+																var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
+																for (var i = 0; i < topics.length; i++) {
+																	if (topics[i].checked) {
+																		topicsChecked = true;
+																	}
+																}
+																if (!topicsChecked && !topicsLocked) {
+																	topicsLocked = true;
+																	wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushTopics' );
+																} else if (topicsChecked && topicsLocked) {
+																	topicsLocked = false;
+																	wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushTopics' );
+																}
+															}
 
-                                                            var segmentsChecked = false;
-                                                            if (segmentsRequired) {
-                                                                var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
-                                                                for (var i = 0; i < segments.length; i++) {
-                                                                    if (segments[i].checked) {
-                                                                        segmentsChecked = true;
-                                                                    }
-                                                                }
-                                                                if (!segmentsChecked && !segmentsLocked) {
-                                                                    segmentsLocked = true;
-                                                                    wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushSegments' );
-                                                                } else if (segmentsChecked && segmentsLocked) {
-                                                                    segmentsLocked = false;
-                                                                    wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushSegments' );
-                                                                }
-                                                            }
-                                                        }
+															var segmentsChecked = false;
+															if (segmentsRequired) {
+																var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
+																for (var i = 0; i < segments.length; i++) {
+																	if (segments[i].checked) {
+																		segmentsChecked = true;
+																	}
+																}
+																if (!segmentsChecked && !segmentsLocked) {
+																	segmentsLocked = true;
+																	wp.data.dispatch( 'core/editor' ).lockPostSaving( 'cleverpushSegments' );
+																} else if (segmentsChecked && segmentsLocked) {
+																	segmentsLocked = false;
+																	wp.data.dispatch( 'core/editor' ).unlockPostSaving( 'cleverpushSegments' );
+																}
+															}
+														}
 
-                                                        return React.createElement(PluginPrePublishPanel, {
-                                                            title: 'CleverPush'
-                                                        }, topicsRequired && !topicsChecked ? React.createElement("p", null, "Bitte Themenbereiche ausw\xE4hlen") : null, segmentsRequired && !segmentsChecked ? React.createElement("p", null, "Bitte Segmente ausw\xE4hlen") : null);
-                                                    };
+														return React.createElement(PluginPrePublishPanel, {
+															title: 'CleverPush'
+														}, topicsRequired && !topicsChecked ? React.createElement("p", null, "Bitte Themenbereiche ausw\xE4hlen") : null, segmentsRequired && !segmentsChecked ? React.createElement("p", null, "Bitte Segmente ausw\xE4hlen") : null);
+													};
 
-                                                    registerPlugin( 'pre-publish-checklist', { render: PrePublishCleverPush } );
-                                                } else {
-                                                    var publish = document.getElementById('publish');
-                                                    if (publish) {
-                                                        publish.addEventListener('click', function(e) {
-                                                            if ( cpCheckbox && cpCheckbox.checked ) {
-                                                                var topicsChecked = false;
-                                                                if (topicsRequired) {
-                                                                    var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
-                                                                    for (var i = 0; i < topics.length; i++) {
-                                                                        if (topics[i].checked) {
-                                                                            topicsChecked = true;
-                                                                        }
-                                                                    }
-                                                                    if (!topicsChecked) {
-                                                                        e.preventDefault();
-                                                                        alert('CleverPush: Bitte Themenbereiche auswählen');
-                                                                        return;
-                                                                    }
-                                                                }
+													registerPlugin( 'pre-publish-checklist', { render: PrePublishCleverPush } );
+												} else {
+													var publish = document.getElementById('publish');
+													if (publish) {
+														publish.addEventListener('click', function(e) {
+															if ( cpCheckbox && cpCheckbox.checked ) {
+																var topicsChecked = false;
+																if (topicsRequired) {
+																	var topics = cpTopics.querySelectorAll('input[type="checkbox"]');
+																	for (var i = 0; i < topics.length; i++) {
+																		if (topics[i].checked) {
+																			topicsChecked = true;
+																		}
+																	}
+																	if (!topicsChecked) {
+																		e.preventDefault();
+																		alert('CleverPush: Bitte Themenbereiche auswählen');
+																		return;
+																	}
+																}
 
-                                                                var segmentsChecked = false;
-                                                                if (segmentsRequired) {
-                                                                    var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
-                                                                    for (var i = 0; i < segments.length; i++) {
-                                                                        if (segments[i].checked) {
-                                                                            segmentsChecked = true;
-                                                                        }
-                                                                    }
-                                                                    if (!segmentsChecked) {
-                                                                        e.preventDefault();
-                                                                        alert('CleverPush: Bitte Segmente auswählen');
-                                                                        return;
-                                                                    }
-                                                                }
-                                                            }
-                                                        });
-                                                    }
-                                                }
+																var segmentsChecked = false;
+																if (segmentsRequired) {
+																	var segments = cpSegments.querySelectorAll('input[type="checkbox"]');
+																	for (var i = 0; i < segments.length; i++) {
+																		if (segments[i].checked) {
+																			segmentsChecked = true;
+																		}
+																	}
+																	if (!segmentsChecked) {
+																		e.preventDefault();
+																		alert('CleverPush: Bitte Segmente auswählen');
+																		return;
+																	}
+																}
+															}
+														});
+													}
+												}
 											}
 										}
 									}
@@ -668,7 +675,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
 								request.open('POST', ajaxurl, true);
 								request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 								request.send('action=cleverpush_send_options');
-							});
+							};
+
+							if (document.readyState === 'complete') {
+								initCleverPush();
+							} else {
+								window.addEventListener('load', initCleverPush);
+							}
 						}
 					} catch (err) {
 						console.error(err);

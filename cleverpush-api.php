@@ -18,7 +18,7 @@ class CleverPush_Api
         }
 
         $response = wp_remote_post( CLEVERPUSH_API_ENDPOINT . $path, array(
-                'timeout' => 10,
+                'timeout' => 20,
                 'headers' => array(
                     'authorization' => $api_key_private,
                     'content-type' => 'application/json'
