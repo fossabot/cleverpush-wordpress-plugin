@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.0.4
+Version: 1.0.5
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -500,44 +500,46 @@ if ( ! class_exists( 'CleverPush' ) ) :
 									var wasPreviewingPost = wp.data.select('core/editor').isPreviewingPost();
 									// determine whether to show notice
 									wp.data.subscribe(function () {
-										var isSavingPost = wp.data.select('core/editor').isSavingPost();
-										var isAutosavingPost = wp.data.select('core/editor').isAutosavingPost();
-										var isPreviewingPost = wp.data.select('core/editor').isPreviewingPost();
-										var hasActiveMetaBoxes = wp.data.select('core/edit-post').hasMetaBoxes();
+										if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe && wp.data.select) {
+											var isSavingPost = wp.data.select('core/editor').isSavingPost();
+											var isAutosavingPost = wp.data.select('core/editor').isAutosavingPost();
+											var isPreviewingPost = wp.data.select('core/editor').isPreviewingPost();
+											var hasActiveMetaBoxes = wp.data.select('core/edit-post').hasMetaBoxes();
 
-										var postStatus = wp.data.select('core/editor').getEditedPostAttribute('status');
+											var postStatus = wp.data.select('core/editor').getEditedPostAttribute('status');
 
-										// Save metaboxes on save completion, except for autosaves that are not a post preview.
-										var shouldTriggerTemplateNotice = (
-											(wasSavingPost && !isSavingPost && !wasAutosavingPost) ||
-											(wasAutosavingPost && wasPreviewingPost && !isPreviewingPost)
-										);
+											// Save metaboxes on save completion, except for autosaves that are not a post preview.
+											var shouldTriggerTemplateNotice = (
+												(wasSavingPost && !isSavingPost && !wasAutosavingPost) ||
+												(wasAutosavingPost && wasPreviewingPost && !isPreviewingPost)
+											);
 
-										// Save current state for next inspection.
-										wasSavingPost = isSavingPost;
-										wasAutosavingPost = isAutosavingPost;
-										wasPreviewingPost = isPreviewingPost;
+											// Save current state for next inspection.
+											wasSavingPost = isSavingPost;
+											wasAutosavingPost = isAutosavingPost;
+											wasPreviewingPost = isPreviewingPost;
 
-										if (shouldTriggerTemplateNotice && postStatus === 'publish') {
-											if (cpCheckbox && cpCheckbox.checked) {
-												setTimeout(function () {
-													cpCheckbox.checked = false;
-												}, 30 * 1000);
+											if (shouldTriggerTemplateNotice && postStatus === 'publish') {
+												if (cpCheckbox && cpCheckbox.checked) {
+													setTimeout(function () {
+														cpCheckbox.checked = false;
+													}, 30 * 1000);
 
-												hasNotice = true;
+													hasNotice = true;
 
-												wp.data.dispatch('core/notices').createNotice(
-													'info', // Can be one of: success, info, warning, error.
-													'<?php echo __('The push notification for this post has been successfully sent.', 'cleverpush'); ?>', // Text string to display.
-													{
-														id: 'cleverpush-notification-status', //assigning an ID prevents the notice from being added repeatedly
-														isDismissible: true, // Whether the user can dismiss the notice.
-														// Any actions the user can perform.
-														actions: []
-													}
-												);
-											} else if (hasNotice) {
-												wp.data.dispatch('core/notices').removeNotice('cleverpush-notification-status');
+													wp.data.dispatch('core/notices').createNotice(
+														'info', // Can be one of: success, info, warning, error.
+														'<?php echo __('The push notification for this post has been successfully sent.', 'cleverpush'); ?>', // Text string to display.
+														{
+															id: 'cleverpush-notification-status', //assigning an ID prevents the notice from being added repeatedly
+															isDismissible: true, // Whether the user can dismiss the notice.
+															// Any actions the user can perform.
+															actions: []
+														}
+													);
+												} else if (hasNotice) {
+													wp.data.dispatch('core/notices').removeNotice('cleverpush-notification-status');
+												}
 											}
 										}
 									});
