@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.0.7
+Version: 1.0.8
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -136,7 +136,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					$custom = get_post_custom($post->ID);
 					$apiKey = get_option('cleverpush_apikey_private');
 					$channelId = get_option('cleverpush_channel_id');
-					$cleverpushStoryId = $custom["cleverpush_story_id"][0];
+					$cleverpushStoryId = $custom['cleverpush_story_id'][0];
 					$fetchTime = get_transient('cleverpush_story_' . $cleverpushStoryId . '_time');
 
 					if (!empty($apiKey))
@@ -162,8 +162,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 										<select name="cleverpush_story_id">
 											<?php
 											echo '<option value="" disabled' . (empty($cleverpushStoryId) ? ' selected' : '') . '>Bitte Story auswählen…</option>';
-											foreach ( $stories as $cleverpush ) {
-												echo '<option value="' . $cleverpush->_id . '"' . ($cleverpushStoryId == $cleverpush->_id ? ' selected' : '') . '>' . $cleverpush->title . '</option>';
+											foreach ( $stories as $story ) {
+												echo '<option value="' . $story->_id . '"' . ($cleverpushStoryId == $story->_id ? ' selected' : '') . '>' . $story->title . '</option>';
 											}
 											?>
 										</select>
@@ -714,7 +714,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			}
 		}
 
-		public function save_post($post_id)
+		public function save_post($post_id, $post)
 		{
 			if (!current_user_can('edit_post', $post_id))
 				return;
@@ -729,9 +729,27 @@ if ( ! class_exists( 'CleverPush' ) ) :
                 update_post_meta($post_id, 'cleverpush_text', $_POST['cleverpush_text']);
             }
 
-			if (isset($_POST['clear_cache']) && !empty($_POST['cleverpush_story_id'])) {
-				delete_transient('cleverpush_story_' . sanitize_text_field($_POST['cleverpush_story_id']) . '_content');
-				delete_transient('cleverpush_story_' . sanitize_text_field($_POST['cleverpush_story_id']) . '_time');
+			if (!empty($_POST['cleverpush_story_id'])) {
+				if (isset($_POST['clear_cache']) && !empty($_POST['cleverpush_story_id'])) {
+					delete_transient('cleverpush_story_' . sanitize_text_field($_POST['cleverpush_story_id']) . '_content');
+					delete_transient('cleverpush_story_' . sanitize_text_field($_POST['cleverpush_story_id']) . '_time');
+				}
+
+				$meta = array(
+					'cleverpush_story_id' => sanitize_text_field($_POST['cleverpush_story_id']),
+				);
+
+				foreach ($meta as $key => $value) { // Cycle through the $events_meta array!
+					if ( $post->post_type == 'revision' ) return; // Don't store custom data twice
+					$value = implode(',', (array)$value); // If $value is an array, make it a CSV (unlikely)
+					if (get_post_meta($post->ID, $key, FALSE)) { // If the custom field already has a value
+						update_post_meta($post->ID, $key, $value);
+					} else { // If the custom field doesn't have a value
+						add_post_meta($post->ID, $key, $value);
+					}
+					if (!$value) delete_post_meta($post->ID, $key); // Delete if blank
+				}
+				remove_action('save_post', array( $this, 'save_post' ), 1 );
 			}
 		}
 
