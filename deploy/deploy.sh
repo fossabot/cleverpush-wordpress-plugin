@@ -12,9 +12,6 @@ cd ../svn/trunk/
 # 4. Move assets/ to SVN /assets/
 mv ./assets/ ../assets/
 
-# 4. Move languages/ to SVN /languages/
-mv ./public/ ../public/
-
 # 5. Clean up unnecessary files
 rm -rf .git/
 rm -rf deploy/
