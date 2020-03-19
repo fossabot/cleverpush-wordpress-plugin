@@ -29,6 +29,9 @@ If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
 
+= 1.0.9 =
+* CleverPush Story fixes (3)
+
 = 1.0.8 =
 * CleverPush Story fixes (2)
 
