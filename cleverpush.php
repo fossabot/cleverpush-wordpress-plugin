@@ -1006,7 +1006,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					echo preg_replace("#</?(head)[^>]*>#i", "", $cleverpushContent);
 				});
 
-				$path = plugin_dir_path( __FILE__ ) . 'includes/story-template.php';
+				$path = plugin_dir_path( __FILE__ ) . 'cleverpush-story.php';
 				if (file_exists($path)) {
 					return $path;
 				}
