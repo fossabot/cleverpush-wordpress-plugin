@@ -5,7 +5,7 @@ Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
 Tested up to: 5.3
-Stable tag: 1.0.12
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,13 +29,16 @@ If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
 
-= 1.0.12
+= 1.1.0 =
+* Cache Topics/Segments
+
+= 1.0.12 =
 * CleverPush Story fixes (6)
 
-= 1.0.11
+= 1.0.11 =
 * CleverPush Story fixes (5)
 
-= 1.0.10
+= 1.0.10 =
 * CleverPush Story fixes (4)
 
 = 1.0.9 =

@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.0.12
+Version: 1.1.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -68,7 +68,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		}
 
 		function load_admin_style() {
-			wp_enqueue_style( 'admin_css', plugin_dir_url( __FILE__ ) . 'assets/cleverpush-admin.css', false, '1.0.0' );
+			wp_enqueue_style( 'admin_css', plugin_dir_url( __FILE__ ) . 'cleverpush-admin.css', false, '1.0.0' );
 		}
 
 		/**
@@ -236,25 +236,34 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				);
 
 				if (is_wp_error($response)) {
-					?>
-					<div class="error notice">
-						<p><?php echo $response->get_error_message(); ?></p>
-					</div>
-					<?php
+                    $segments_data = get_transient( 'cleverpush_segments_response');
+
+                    if (empty($segments_data)) {
+                        ?>
+                        <div class="error notice">
+                            <p><?php echo $response->get_error_message(); ?></p>
+                        </div>
+                        <?php
+                    }
 				} else {
 					$body = wp_remote_retrieve_body($response);
-					$data = json_decode($body);
-					if (isset($data->segments)) {
-						$cleverpush_segments = $data->segments;
-					}
-					if (isset($data->segmentsRequiredField) && $data->segmentsRequiredField) {
-						$cleverpush_segments_required = true;
-					}
+					$segments_data = json_decode($body);
+
+                    set_transient( 'cleverpush_segments_response', $segments_data, 60 * 60 * 24 * 30 );
 				}
+
+				if (isset($segments_data)) {
+                    if (isset($segments_data->segments)) {
+                        $cleverpush_segments = $segments_data->segments;
+                    }
+                    if (isset($segments_data->segmentsRequiredField) && $segments_data->segmentsRequiredField) {
+                        $cleverpush_segments_required = true;
+                    }
+                }
 
 				$cleverpush_topics = array();
 
-				$response = wp_remote_get(CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/topics', array(
+				$response = wp_remote_get( CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/topics', array(
 						'timeout' => 10,
 						'headers' => array(
 							'authorization' => $api_key_private
@@ -263,21 +272,30 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				);
 
 				if (is_wp_error($response)) {
-					?>
-					<div class="error notice">
-						<p><?php echo $response->get_error_message(); ?></p>
-					</div>
-					<?php
+                    $topics_data = get_transient( 'cleverpush_topics_response');
+
+                    if (empty($topics_data)) {
+                        ?>
+                        <div class="error notice">
+                            <p><?php echo $response->get_error_message(); ?></p>
+                        </div>
+                        <?php
+                    }
 				} else {
 					$body = wp_remote_retrieve_body($response);
-					$data = json_decode($body);
-					if (isset($data->topics)) {
-						$cleverpush_topics = $data->topics;
-					}
-					if (isset($data->topicsRequiredField) && $data->topicsRequiredField) {
-						$cleverpush_topics_required = true;
-					}
+					$topics_data = json_decode($body);
+
+                    set_transient( 'cleverpush_topics_response', $topics_data, 60 * 60 * 24 * 30 );
 				}
+
+				if (isset($topics_data)) {
+                    if (isset($topics_data->topics)) {
+                        $cleverpush_topics = $topics_data->topics;
+                    }
+                    if (isset($topics_data->topicsRequiredField) && $topics_data->topicsRequiredField) {
+                        $cleverpush_topics_required = true;
+                    }
+                }
 
 				?>
 
