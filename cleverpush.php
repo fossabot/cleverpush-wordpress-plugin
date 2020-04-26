@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.1.0
+Version: 1.2.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -223,77 +223,82 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			$api_key_private = get_option('cleverpush_apikey_private');
 			$cleverpush_topics_required = false;
 			$cleverpush_segments_required = false;
+			$hidden_notification_settings = get_option('cleverpush_channel_hidden_notification_settings');
 
 			if (!empty($api_key_private) && !empty($selected_channel_id)) {
 				$cleverpush_segments = array();
 
-				$response = wp_remote_get(CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/segments', array(
-						'timeout' => 10,
-						'headers' => array(
-							'authorization' => $api_key_private
-						)
-					)
-				);
+                if (empty($hidden_notification_settings) || strpos($hidden_notification_settings, 'segments') === false) {
+                    $response = wp_remote_get(CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/segments', array(
+                            'timeout' => 10,
+                            'headers' => array(
+                                'authorization' => $api_key_private
+                            )
+                        )
+                    );
 
-				if (is_wp_error($response)) {
-                    $segments_data = get_transient( 'cleverpush_segments_response');
+                    if (is_wp_error($response)) {
+                        $segments_data = get_transient( 'cleverpush_segments_response');
 
-                    if (empty($segments_data)) {
-                        ?>
-                        <div class="error notice">
-                            <p><?php echo $response->get_error_message(); ?></p>
-                        </div>
-                        <?php
+                        if (empty($segments_data)) {
+                            ?>
+                            <div class="error notice">
+                                <p><?php echo $response->get_error_message(); ?></p>
+                            </div>
+                            <?php
+                        }
+                    } else {
+                        $body = wp_remote_retrieve_body($response);
+                        $segments_data = json_decode($body);
+
+                        set_transient( 'cleverpush_segments_response', $segments_data, 60 * 60 * 24 * 30 );
                     }
-				} else {
-					$body = wp_remote_retrieve_body($response);
-					$segments_data = json_decode($body);
 
-                    set_transient( 'cleverpush_segments_response', $segments_data, 60 * 60 * 24 * 30 );
-				}
-
-				if (isset($segments_data)) {
-                    if (isset($segments_data->segments)) {
-                        $cleverpush_segments = $segments_data->segments;
-                    }
-                    if (isset($segments_data->segmentsRequiredField) && $segments_data->segmentsRequiredField) {
-                        $cleverpush_segments_required = true;
+                    if (isset($segments_data)) {
+                        if (isset($segments_data->segments)) {
+                            $cleverpush_segments = $segments_data->segments;
+                        }
+                        if (isset($segments_data->segmentsRequiredField) && $segments_data->segmentsRequiredField) {
+                            $cleverpush_segments_required = true;
+                        }
                     }
                 }
 
 				$cleverpush_topics = array();
 
-				$response = wp_remote_get( CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/topics', array(
-						'timeout' => 10,
-						'headers' => array(
-							'authorization' => $api_key_private
-						)
-					)
-				);
+				if (empty($hidden_notification_settings) || strpos($hidden_notification_settings, 'topics') === false) {
+                    $response = wp_remote_get( CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/topics', array(
+                            'timeout' => 10,
+                            'headers' => array(
+                                'authorization' => $api_key_private
+                            )
+                        )
+                    );
 
-				if (is_wp_error($response)) {
-                    $topics_data = get_transient( 'cleverpush_topics_response');
+                    if (is_wp_error($response)) {
+                        $topics_data = get_transient( 'cleverpush_topics_response');
 
-                    if (empty($topics_data)) {
-                        ?>
-                        <div class="error notice">
-                            <p><?php echo $response->get_error_message(); ?></p>
-                        </div>
-                        <?php
+                        if (empty($topics_data)) {
+                            ?>
+                            <div class="error notice">
+                                <p><?php echo $response->get_error_message(); ?></p>
+                            </div>
+                            <?php
+                        }
+                    } else {
+                        $body = wp_remote_retrieve_body($response);
+                        $topics_data = json_decode($body);
+
+                        set_transient( 'cleverpush_topics_response', $topics_data, 60 * 60 * 24 * 30 );
                     }
-				} else {
-					$body = wp_remote_retrieve_body($response);
-					$topics_data = json_decode($body);
 
-                    set_transient( 'cleverpush_topics_response', $topics_data, 60 * 60 * 24 * 30 );
-				}
-
-				if (isset($topics_data)) {
-                    if (isset($topics_data->topics)) {
-                        $cleverpush_topics = $topics_data->topics;
-                    }
-                    if (isset($topics_data->topicsRequiredField) && $topics_data->topicsRequiredField) {
-                        $cleverpush_topics_required = true;
+                    if (isset($topics_data)) {
+                        if (isset($topics_data->topics)) {
+                            $cleverpush_topics = $topics_data->topics;
+                        }
+                        if (isset($topics_data->topicsRequiredField) && $topics_data->topicsRequiredField) {
+                            $cleverpush_topics_required = true;
+                        }
                     }
                 }
 
@@ -798,6 +803,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_channel');
 			register_setting('cleverpush_options', 'cleverpush_channel_id');
 			register_setting('cleverpush_options', 'cleverpush_channel_subdomain');
+            register_setting('cleverpush_options', 'cleverpush_channel_hidden_notification_settings');
 			register_setting('cleverpush_options', 'cleverpush_apikey_private');
 			register_setting('cleverpush_options', 'cleverpush_apikey_public');
 		}
@@ -910,8 +916,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 				<form method="post" action="options.php">
 					<input type="hidden" name="cleverpush_channel_subdomain" value="<?php echo get_option('cleverpush_channel_subdomain'); ?>">
-					<?php settings_fields('cleverpush_options'); ?>
-					<table class="form-table">
+                    <input type="hidden" name="cleverpush_channel_hidden_notification_settings" value="<?php echo get_option('cleverpush_channel_hidden_notification_settings'); ?>">
+
+                    <?php settings_fields('cleverpush_options'); ?>
+
+                    <table class="form-table">
 						<tr valign="top">
 							<th scope="row"><?php _e('Select Channel', 'cleverpush'); ?></th>
 							<td>
@@ -919,11 +928,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 									if (!empty($channels) && count($channels) > 0) {
 										?>
 										<select name="cleverpush_channel_id">
-											<option disabled value="" <?php echo empty($selected_channel_id) ? 'selected' : ''; ?>>Kanal auswählen...</option>
+											<option disabled value="" <?php echo empty($selected_channel_id) ? 'selected' : ''; ?>><?php _e('Select Channel', 'cleverpush'); ?>...</option>
 											<?php
 											foreach ($channels as $channel) {
 												?>
-												<option value="<?php echo $channel->_id; ?>" <?php echo $selected_channel_id == $channel->_id ? 'selected' : ''; ?> data-subdomain="<?php echo $channel->identifier; ?>"><?php echo $channel->name; ?></option>
+												<option value="<?php echo $channel->_id; ?>" <?php echo $selected_channel_id == $channel->_id ? 'selected' : ''; ?> data-subdomain="<?php echo $channel->identifier; ?>" data-hidden-notification-settings="<?php echo implode($channel->hiddenNotificationSettings); ?>"><?php echo $channel->name; ?></option>
 												<?php
 											}
 											?>
@@ -965,9 +974,25 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 			<script>
 				var subdomain_input = document.querySelector('input[name="cleverpush_channel_subdomain"]');
+                var hiddenNotificationSettings_input = document.querySelector('input[name="cleverpush_channel_hidden_notification_settings"]');
 				document.querySelector('select[name="cleverpush_channel_id').addEventListener('change', function() {
-					subdomain_input.value = this.querySelector(':checked').getAttribute('data-subdomain');
+				    if (subdomain_input) {
+                        subdomain_input.value = this.querySelector(':checked').getAttribute('data-subdomain');
+                    }
+                    if (hiddenNotificationSettings_input) {
+                        hiddenNotificationSettings_input.value = this.querySelector(':checked').getAttribute('data-hidden-notification-settings');
+                    }
 				});
+
+				var currChecked = document.querySelector('select[name="cleverpush_channel_id').querySelector(':checked');
+				if (currChecked) {
+                    if (subdomain_input) {
+                        subdomain_input.value = currChecked.getAttribute('data-subdomain');
+                    }
+                    if (hiddenNotificationSettings_input) {
+                        hiddenNotificationSettings_input.value = currChecked.getAttribute('data-hidden-notification-settings');
+                    }
+                }
 			</script>
 
 			<?php
