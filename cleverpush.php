@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.2.0
+Version: 1.3.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -33,7 +33,15 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			add_action('add_meta_boxes', array($this, 'create_metabox'));
 			add_action('save_post', array($this, 'save_post'), 10, 2);
 			add_action('admin_notices', array($this, 'notices'));
+			
 			add_action('publish_post', array($this, 'publish_post'), 10, 1);
+			$post_types = get_option('cleverpush_post_types');
+			if (!empty($post_types)) {
+				foreach ($post_types as $post_type) {
+					add_action('publish_' . $post_type, array($this, 'publish_post'), 10, 1);
+				}
+			}
+
 			add_action('admin_enqueue_scripts', array($this, 'load_admin_style') );
 
 			add_action('wp_ajax_cleverpush_send_options', array($this, 'ajax_load_options'));
@@ -90,34 +98,36 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		}
 
 		public function register_post_types() {
-			$labels = array(
-				'menu_name' => _x('CP Stories', 'post type general name', 'cleverpush'),
-				'name' => _x('CleverPush Stories', 'post type general name', 'cleverpush'),
-				'singular_name' => _x('Story', 'post type singular name', 'cleverpush'),
-				'add_new' => _x('Neue Story', 'portfolio item', 'cleverpush'),
-				'add_new_item' => __('Neue Story hinzufügen', 'cleverpush'),
-				'edit_item' => __('Story bearbeiten', 'cleverpush'),
-				'new_item' => __('Neue Story', 'cleverpush'),
-				'view_item' => __('Story ansehen', 'cleverpush'),
-				'search_items' => __('Stories suchen', 'cleverpush'),
-				'not_found' =>  __('Nichts gefunden', 'cleverpush'),
-				'not_found_in_trash' => __('Nichts gefunden', 'cleverpush'),
-				'parent_item_colon' => '',
-				'all_items' =>  __('Stories', 'cleverpush'),
-			);
+			if (get_option('cleverpush_stories_enabled') == 'on') {
+				$labels = array(
+					'menu_name' => _x('CP Stories', 'post type general name', 'cleverpush'),
+					'name' => _x('CleverPush Stories', 'post type general name', 'cleverpush'),
+					'singular_name' => _x('Story', 'post type singular name', 'cleverpush'),
+					'add_new' => _x('Neue Story', 'portfolio item', 'cleverpush'),
+					'add_new_item' => __('Neue Story hinzufügen', 'cleverpush'),
+					'edit_item' => __('Story bearbeiten', 'cleverpush'),
+					'new_item' => __('Neue Story', 'cleverpush'),
+					'view_item' => __('Story ansehen', 'cleverpush'),
+					'search_items' => __('Stories suchen', 'cleverpush'),
+					'not_found' =>  __('Nichts gefunden', 'cleverpush'),
+					'not_found_in_trash' => __('Nichts gefunden', 'cleverpush'),
+					'parent_item_colon' => '',
+					'all_items' =>  __('Stories', 'cleverpush'),
+				);
 
-			$args = array(
-				'labels' => $labels,
-				'public' => true,
-				'show_ui' => true,
-				'capability_type' => 'post',
-				'hierarchical' => false,
-				'menu_position' => null,
-				'supports' => false,
-				'rewrite' => array('slug' => 'cleverpush-stories','with_front' => false),
-			);
+				$args = array(
+					'labels' => $labels,
+					'public' => true,
+					'show_ui' => true,
+					'capability_type' => 'post',
+					'hierarchical' => false,
+					'menu_position' => null,
+					'supports' => false,
+					'rewrite' => array('slug' => 'cleverpush-stories','with_front' => false),
+				);
 
-			register_post_type( 'cleverpush_story' , $args );
+				register_post_type( 'cleverpush_story' , $args );
+			}
 
 			if ( get_option( 'cleverpush_flush_rewrite_rules_flag' ) ) {
 				flush_rewrite_rules();
@@ -396,6 +406,14 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		public function create_metabox()
 		{
 			add_meta_box('cleverpush-metabox', 'CleverPush', array($this, 'metabox'), 'post', 'side', 'high');
+
+			$post_types = get_option('cleverpush_post_types');
+			if (!empty($post_types)) {
+				foreach ($post_types as $post_type) {
+					add_meta_box('cleverpush-metabox', 'CleverPush', array($this, 'metabox'), $post_type, 'side', 'high');
+				}
+			}
+			
 			add_meta_box('cleverpush_story_id_meta', 'CleverPush Story', array(&$this, 'cleverpush_story_id_meta'), 'cleverpush_story', 'normal', 'default');
 		}
 
@@ -428,10 +446,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				<div class="cleverpush-content components-base-control" style="display: none; margin-top: 15px;">
 					<div class="components-base-control__field">
 						<label class="components-base-control__label"
-							   for="cleverpush_title"><?php _e('Custom headline', 'cleverpush'); ?>:</label>
+							   for="cleverpush_title"><?php _e('Custom headline', 'cleverpush'); ?> <?php echo get_option('cleverpush_notification_title_required') == 'on' ? ('(' . __('required', 'cleverpush') . ')') : '' ?>:</label>
 						<div><input type="text" name="cleverpush_title" id="cleverpush_title"
 									value="<?php echo(!empty(get_post_meta($post->ID, 'cleverpush_title', true)) ? get_post_meta($post->ID, 'cleverpush_title', true) : ''); ?>"
-									style="width: 100%"></div>
+									style="width: 100%"
+									></div>
 					</div>
 
 					<div class="components-base-control__field">
@@ -681,13 +700,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		}
 
 		public function publish_post($post_id) {
-			if ('inline-save' == $_POST['action'])
-			{
+			if ('inline-save' == $_POST['action']) {
 				return;
 			}
 
-			if (isset($_POST['cleverpush_metabox_form_data_available']) ? !isset($_POST['cleverpush_send_notification']) : !get_post_meta($post_id, 'cleverpush_send_notification', true))
-			{
+			if (isset($_POST['cleverpush_metabox_form_data_available']) ? !isset($_POST['cleverpush_send_notification']) : !get_post_meta($post_id, 'cleverpush_send_notification', true)) {
 				return;
 			}
 
@@ -699,6 +716,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			}
 
 			$title = html_entity_decode(get_the_title($post_id));
+			if (get_option('cleverpush_notification_title_required') == 'on') {
+				$title = null;
+			}
 			$text = !empty(get_the_excerpt()) ? html_entity_decode(get_the_excerpt()) : '';
 			$url = get_permalink($post_id);
 
@@ -708,6 +728,10 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			}
 			if (!empty($_POST['cleverpush_text'])) {
 				$text = stripslashes($_POST['cleverpush_text']);
+			}
+
+			if (empty($title)) {
+				return;
 			}
 
 			$options = array();
@@ -806,6 +830,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
             register_setting('cleverpush_options', 'cleverpush_channel_hidden_notification_settings');
 			register_setting('cleverpush_options', 'cleverpush_apikey_private');
 			register_setting('cleverpush_options', 'cleverpush_apikey_public');
+			register_setting('cleverpush_options', 'cleverpush_notification_title_required');
+			register_setting('cleverpush_options', 'cleverpush_stories_enabled');
+			register_setting('cleverpush_options', 'cleverpush_post_types');
 		}
 
 		public function javascript()
@@ -921,6 +948,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
                     <?php settings_fields('cleverpush_options'); ?>
 
                     <table class="form-table">
+
+						<tr valign="top">
+							<th scope="row"><?php _e('Private API-Key', 'cleverpush'); ?></th>
+							<td><input type="text" name="cleverpush_apikey_private"
+									value="<?php echo get_option('cleverpush_apikey_private'); ?>" style="width: 320px;"/></td>
+						</tr>
+
 						<tr valign="top">
 							<th scope="row"><?php _e('Select Channel', 'cleverpush'); ?></th>
 							<td>
@@ -950,9 +984,28 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						</tr>
 
 						<tr valign="top">
-							<th scope="row"><?php _e('Private API-Key', 'cleverpush'); ?></th>
-							<td><input type="text" name="cleverpush_apikey_private"
-									   value="<?php echo get_option('cleverpush_apikey_private'); ?>" style="width: 320px;"/></td>
+							<th scope="row"><?php _e('Custom notification headline required', 'cleverpush'); ?></th>
+							<td><input type="checkbox" name="cleverpush_notification_title_required" <?php echo get_option('cleverpush_notification_title_required') == 'on' ? 'checked' : ''; ?> /></td>
+						</tr>
+
+						<tr valign="top">
+							<th scope="row"><?php _e('Post types', 'cleverpush'); ?></th>
+							<td>
+									<?php foreach ( get_post_types([ 'public' => true ], 'objects') as $post_type ): ?>
+									<?php if ($post_type->name !== 'post'): ?>
+										<div>
+											<input type="checkbox" name="cleverpush_post_types[]" value="<?php echo $post_type->name; ?>" <?php echo !empty(get_option('cleverpush_post_types')) && in_array($post_type->name, get_option('cleverpush_post_types')) ? 'checked' : ''; ?> />
+											<?php echo $post_type->labels->singular_name; ?>
+										</div>
+									<?php endif; ?>
+
+									<?php endforeach; ?>
+							</td>
+						</tr>
+
+						<tr valign="top">
+							<th scope="row"><?php _e('CleverPush stories enabled', 'cleverpush'); ?></th>
+							<td><input type="checkbox" name="cleverpush_stories_enabled" <?php echo get_option('cleverpush_stories_enabled') == 'on' ? 'checked' : ''; ?> /></td>
 						</tr>
 
 					</table>
@@ -961,7 +1014,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 											 value="<?php _e('Save Changes', 'cleverpush') ?>"/></p>
 				</form>
 
-				<?php if (!empty($api_key_private)): ?>
+				<?php if (!empty($api_key_private) && get_option('cleverpush_stories_enabled') == 'on'): ?>
 					<hr />
 					<br />
 

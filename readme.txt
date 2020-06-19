@@ -4,8 +4,8 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
-Tested up to: 5.3
-Stable tag: 1.2.0
+Tested up to: 5.4
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,11 @@ Please enter your API keys in the plugin's settings and select a channel. If no 
 If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
+
+= 1.3.0 =
+* Support custom post types
+* Hide CP Stories by default, can be enabled in CleverPush settings
+* Add "Custom headline required" option
 
 = 1.2.0 =
 * Hide Topics/Segments if disabled in CleverPush backend
