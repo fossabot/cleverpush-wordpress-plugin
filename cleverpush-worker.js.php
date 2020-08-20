@@ -5,7 +5,7 @@ $cleverpush_id = null;
 if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) {
     $cleverpush_id = $_GET['channel'];
 
-} else if (file_exists( $wpConfigPath )) {
+} else {
 
     // No need for the template engine
     define( 'WP_USE_THEMES', false );
@@ -18,9 +18,11 @@ if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) {
         $wpConfigPath = '../../../wp/wp-load.php';
     }
 
-    require_once( $wpConfigPath );
-
-    $cleverpush_id = get_option('cleverpush_channel_id');
+    if (file_exists( $wpConfigPath ) {
+        require_once( $wpConfigPath );
+    
+        $cleverpush_id = get_option('cleverpush_channel_id');
+    }
 }
 
 header("Service-Worker-Allowed: /");
