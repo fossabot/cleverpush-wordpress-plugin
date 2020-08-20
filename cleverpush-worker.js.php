@@ -1,25 +1,26 @@
 <?php
 
-// No need for the template engine
-define( 'WP_USE_THEMES', false );
-
-// Assuming we're in a subdir: "~/wp-content/plugins/cleverpush"
-$wpConfigPath = '../../../wp-load.php';
-
-// maybe the user uses bedrock
-if (!file_exists( $wpConfigPath )) {
-    $wpConfigPath = '../../../wp/wp-load.php';
-}
-
 $cleverpush_id = null;
 
-if (file_exists( $wpConfigPath )) {
+if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) {
+    $cleverpush_id = $_GET['channel'];
+
+} else if (file_exists( $wpConfigPath )) {
+
+    // No need for the template engine
+    define( 'WP_USE_THEMES', false );
+
+    // Assuming we're in a subdir: "~/wp-content/plugins/cleverpush"
+    $wpConfigPath = '../../../wp-load.php';
+    
+    // maybe the user uses bedrock
+    if (!file_exists( $wpConfigPath )) {
+        $wpConfigPath = '../../../wp/wp-load.php';
+    }
+
     require_once( $wpConfigPath );
 
     $cleverpush_id = get_option('cleverpush_channel_id');
-
-} else if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) {
-    $cleverpush_id = $_GET['channel'];
 }
 
 header("Service-Worker-Allowed: /");
