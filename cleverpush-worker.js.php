@@ -18,7 +18,7 @@ if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) {
         $wpConfigPath = '../../../wp/wp-load.php';
     }
 
-    if (file_exists( $wpConfigPath ) {
+    if (file_exists( $wpConfigPath )) {
         require_once( $wpConfigPath );
     
         $cleverpush_id = get_option('cleverpush_channel_id');
