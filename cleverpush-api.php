@@ -9,10 +9,9 @@ const CLEVERPUSH_API_ENDPOINT = 'https://api.cleverpush.com';
 class CleverPush_Api
 {
     public static function request($path, $params) {
-        $channel_id = get_option('cleverpush_channel_id');
         $api_key_private = get_option('cleverpush_apikey_private');
 
-        if (empty($channel_id) || empty($api_key_private))
+        if (empty($api_key_private))
         {
             return null;
         }
@@ -23,10 +22,7 @@ class CleverPush_Api
                     'authorization' => $api_key_private,
                     'content-type' => 'application/json'
                 ),
-                'body' => json_encode(array_merge(
-                    array('channel' => $channel_id),
-                    $params
-                ))
+                'body' => json_encode($params)
             )
         );
 
@@ -57,16 +53,37 @@ class CleverPush_Api
 
     public static function send_notification($title, $body, $url, $options = array(), $subscriptionId = null)
     {
-        $params = array_merge(array(
-            'title' => $title,
-            'text' => $body,
-            'url' => $url
-        ), $options);
+        $channel_id = get_option('cleverpush_channel_id');
+
+        if (empty($channel_id))
+        {
+            return null;
+        }
+
+        $params = array_merge(
+            array(
+                'channel' => $channel_id,
+                'title' => $title,
+                'text' => $body,
+                'url' => $url
+            ),
+            $options
+        );
 
         if ($subscriptionId) {
             $params['subscriptionId'] = $subscriptionId;
         }
 
         return CleverPush_Api::request('/notification/send', $params);
+    }
+
+    public static function update_channel($channel_id, $params = array())
+    {
+        if (empty($channel_id))
+        {
+            return null;
+        }
+
+        return CleverPush_Api::request('/channel/' . $channel_id, $params);
     }
 }

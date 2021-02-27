@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.3.2
+Version: 1.4.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -54,6 +54,15 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 			add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this, 'plugin_add_settings_link'));
 
+			if (
+				!is_admin() &&
+				get_option('cleverpush_preview_access_enabled') == 'on' &&
+				!empty(get_option('cleverpush_apikey_private'))
+			) {
+				add_filter('pre_get_posts', array($this, 'show_public_preview'));
+				add_filter('query_vars', array($this, 'add_query_var'));
+				add_filter('wpseo_whitelist_permalink_vars', array($this, 'add_query_var'));
+			}
 
 			load_plugin_textdomain(
 				'cleverpush',
@@ -800,6 +809,48 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			}
 		}
 
+		public function show_public_preview( $query ) {
+			if (
+				$query->is_main_query() &&
+				$query->is_preview() &&
+				$query->is_singular() &&
+				$query->get('_cp_token')
+			) {
+				if ( ! headers_sent() ) {
+					nocache_headers();
+					header('X-Robots-Tag: noindex');
+				}
+				add_action('wp_head', 'wp_no_robots');
+
+				add_filter('posts_results', array($this, 'set_post_to_publish'), 10, 2);
+			}
+
+			return $query;
+		}
+
+		public function set_post_to_publish( $posts ) {
+			remove_filter( 'posts_results', array( $this, 'set_post_to_publish' ), 10 );
+
+			if ( empty( $posts ) ) {
+				return $posts;
+			}
+
+			$post_id = (int) $posts[0]->ID;
+
+			if ( get_query_var( '_cp_token' ) != hash('sha256', get_option('cleverpush_apikey_private')) ) {
+				wp_die( __( 'This link is not valid!', 'cleverpush' ), 403 );
+			}
+
+			$posts[0]->post_status = 'publish';
+
+			return $posts;
+		}
+
+		public function add_query_var( $qv ) {
+			$qv[] = '_cp_token';
+			return $qv;
+		}
+
 		public function notices()
 		{
 			$result = get_option( 'cleverpush_notification_result', null );
@@ -833,6 +884,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_notification_title_required');
 			register_setting('cleverpush_options', 'cleverpush_stories_enabled');
 			register_setting('cleverpush_options', 'cleverpush_post_types');
+			register_setting('cleverpush_options', 'cleverpush_preview_access_enabled');
 		}
 
 		public function javascript()
@@ -847,6 +899,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		public function plugin_options()
 		{
 			$channels = array();
+			$selected_channel = null;
 			$selected_channel_id = get_option('cleverpush_channel_id');
 			$api_key_private = get_option('cleverpush_apikey_private');
 
@@ -870,6 +923,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					$data = json_decode( $body );
 					if (isset($data->channels)) {
 						$channels = $data->channels;
+
+						foreach ($channels as $channel) {
+							if (!empty($channel) && $channel->_id == $selected_channel_id) {
+								$selected_channel = $channel;
+								break;
+							}
+						}
 					}
 				}
 
@@ -932,6 +992,22 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						echo '<div class="error notice"><p>API Error: ' . $response['response']['message'] . '</p></div>';
 					}
 				}
+
+				if (
+					!empty($selected_channel_id) &&
+					!empty($api_key_private) &&
+					get_option('cleverpush_preview_access_enabled') == 'on' &&
+					!empty($selected_channel) &&
+					(empty($selected_channel->wordpressPreviewAccessEnabled) || $selected_channel->wordpressPreviewAccessEnabled == false)
+				) {
+					try {
+						CleverPush_Api::update_channel($selected_channel_id, array(
+							'wordpressPreviewAccessEnabled' => true
+						));
+					} catch (Exception $ex) {
+
+					}
+				}
 			}
 
 			?>
@@ -984,8 +1060,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						</tr>
 
 						<tr valign="top">
-							<th scope="row"><?php _e('Custom notification headline required', 'cleverpush'); ?></th>
-							<td><input type="checkbox" name="cleverpush_notification_title_required" <?php echo get_option('cleverpush_notification_title_required') == 'on' ? 'checked' : ''; ?> /></td>
+							<th scope="row"><?php _e('Notification headlines', 'cleverpush'); ?></th>
+							<td>
+								<input type="checkbox" name="cleverpush_notification_title_required" <?php echo get_option('cleverpush_notification_title_required') == 'on' ? 'checked' : ''; ?> />
+								<?php _e('Custom notification headline required', 'cleverpush'); ?>
+							</td>
 						</tr>
 
 						<tr valign="top">
@@ -1004,8 +1083,19 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						</tr>
 
 						<tr valign="top">
-							<th scope="row"><?php _e('CleverPush stories enabled', 'cleverpush'); ?></th>
-							<td><input type="checkbox" name="cleverpush_stories_enabled" <?php echo get_option('cleverpush_stories_enabled') == 'on' ? 'checked' : ''; ?> /></td>
+							<th scope="row"><?php _e('CleverPush stories', 'cleverpush'); ?></th>
+							<td>
+								<input type="checkbox" name="cleverpush_stories_enabled" <?php echo get_option('cleverpush_stories_enabled') == 'on' ? 'checked' : ''; ?> />
+								<?php _e('CleverPush stories enabled', 'cleverpush'); ?>
+							</td>
+						</tr>
+
+						<tr valign="top">
+							<th scope="row"><?php _e('Unpublished posts', 'cleverpush'); ?></th>
+							<td>
+								<input type="checkbox" name="cleverpush_preview_access_enabled" <?php echo get_option('cleverpush_preview_access_enabled') == 'on' ? 'checked' : ''; ?> />
+								<?php _e('Allow CleverPush to access unpublished posts in order to load preview data', 'cleverpush'); ?>
+							</td>
 						</tr>
 
 					</table>
