@@ -33,7 +33,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			add_action('add_meta_boxes', array($this, 'create_metabox'));
 			add_action('save_post', array($this, 'save_post'), 10, 2);
 			add_action('admin_notices', array($this, 'notices'));
-			
+
 			add_action('publish_post', array($this, 'publish_post'), 10, 1);
 			$post_types = get_option('cleverpush_post_types');
 			if (!empty($post_types)) {
@@ -422,7 +422,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					add_meta_box('cleverpush-metabox', 'CleverPush', array($this, 'metabox'), $post_type, 'side', 'high');
 				}
 			}
-			
+
 			add_meta_box('cleverpush_story_id_meta', 'CleverPush Story', array(&$this, 'cleverpush_story_id_meta'), 'cleverpush_story', 'normal', 'default');
 		}
 
@@ -1158,7 +1158,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		public function cleverpush_story_template($single) {
 			global $post;
 
-			if ($post->post_type == 'cleverpush_story') {
+			if (!empty($post) && $post->post_type == 'cleverpush_story') {
 				remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 				remove_action( 'wp_print_styles', 'print_emoji_styles' );
 				remove_action( 'wp_head', 'rest_output_link_wp_head' );
