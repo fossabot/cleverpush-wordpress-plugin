@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.4.0
+Version: 1.5.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -24,6 +24,10 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		 */
 		public function __construct()
 		{
+			$this->capabilities_version = '1.0';
+
+			add_site_option('cleverpush_capabilities_version', '0');
+
 			add_action('plugins_loaded', array($this, 'init'));
 			add_action('wp_head', array($this, 'javascript'), 20);
 			add_action('admin_menu', array($this, 'plugin_menu'));
@@ -78,10 +82,47 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			if ( ! get_option( 'cleverpush_flush_rewrite_rules_flag' ) ) {
 				add_option( 'cleverpush_flush_rewrite_rules_flag', true );
 			}
+
+			$this->add_capabilities();
 		}
 
 		function cleverpush_deactivate() {
 			flush_rewrite_rules();
+
+
+			$this->remove_capabilities();
+		}
+
+		function add_capabilities() {
+			if ( ! function_exists( 'get_editable_roles' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/user.php';
+			}
+			$roles = get_editable_roles();
+			foreach ($GLOBALS['wp_roles']->role_objects as $key => $role) {
+				if (isset($roles[$key]) && $role->has_cap('edit_posts')) {
+					$role->add_cap('cleverpush_send');
+				}
+				if (isset($roles[$key]) && $role->has_cap('create_users')) {
+					$role->add_cap('cleverpush_settings');
+				}
+			}
+
+			update_site_option('cleverpush_capabilities_version', $this->capabilities_version);
+		}
+
+		function remove_capabilities() {
+			if ( ! function_exists( 'get_editable_roles' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/user.php';
+			}
+			$roles = get_editable_roles();
+			foreach ($GLOBALS['wp_roles']->role_objects as $key => $role) {
+				if (isset($roles[$key]) && $role->has_cap('cleverpush_send')) {
+					$role->remove_cap('cleverpush_send');
+				}
+				if (isset($roles[$key]) && $role->has_cap('cleverpush_settings')) {
+					$role->remove_cap('cleverpush_settings');
+				}
+			}
 		}
 
 		function load_admin_style() {
@@ -93,6 +134,9 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		 */
 		public function init()
 		{
+			if (get_site_option('cleverpush_capabilities_version') != $this->capabilities_version) {
+				$this->add_capabilities();
+			}
 		}
 
 		public function warn_nosettings()
@@ -414,6 +458,10 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		//------------------------------------------------------------------------//
 		public function create_metabox()
 		{
+			if (!current_user_can('cleverpush_send')) {
+				return;
+			}
+
 			add_meta_box('cleverpush-metabox', 'CleverPush', array($this, 'metabox'), 'post', 'side', 'high');
 
 			$post_types = get_option('cleverpush_post_types');
@@ -713,6 +761,10 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				return;
 			}
 
+			if (!current_user_can('cleverpush_send')) {
+				return;
+			}
+
 			if (isset($_POST['cleverpush_metabox_form_data_available']) ? !isset($_POST['cleverpush_send_notification']) : !get_post_meta($post_id, 'cleverpush_send_notification', true)) {
 				return;
 			}
@@ -772,8 +824,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 		public function save_post($post_id, $post)
 		{
-			if (!current_user_can('edit_post', $post_id))
+			if (!current_user_can('cleverpush_send')) {
 				return;
+			}
+
+			if (!current_user_can('edit_post', $post_id)) {
+				return;
+			}
 
 			$should_send = get_post_status($post_id) != 'publish' ? isset ($_POST['cleverpush_send_notification']) : false;
 			update_post_meta($post_id, 'cleverpush_send_notification', $should_send);
@@ -870,7 +927,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 		public function plugin_menu()
 		{
-			add_options_page('CleverPush', 'CleverPush', 'create_users', 'cleverpush_options', array($this, 'plugin_options'));
+			add_options_page('CleverPush', 'CleverPush', 'cleverpush_settings', 'cleverpush_options', array($this, 'plugin_options'));
 		}
 
 		public function register_settings()
@@ -885,8 +942,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_stories_enabled');
 			register_setting('cleverpush_options', 'cleverpush_post_types');
 			register_setting('cleverpush_options', 'cleverpush_preview_access_enabled');
-			register_setting('cleverpush_options', 'default_replacement_domain');
-			register_setting('cleverpush_options', 'replacement_domain');
+			register_setting('cleverpush_options', 'cleverpush_enable_domain_replacement');
+			register_setting('cleverpush_options', 'cleverpush_replacement_domain');
 		}
 
 		public function javascript()
@@ -900,6 +957,10 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 		public function plugin_options()
 		{
+			if (!current_user_can('cleverpush_settings')) {
+				return;
+			}
+
 			$channels = array();
 			$selected_channel = null;
 			$selected_channel_id = get_option('cleverpush_channel_id');
@@ -1074,7 +1135,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 							<td>
 									<?php foreach ( get_post_types([ 'public' => true ], 'objects') as $post_type ): ?>
 									<?php if ($post_type->name !== 'post'): ?>
-										<div>
+										<div style="margin-bottom: 5px;">
 											<input type="checkbox" name="cleverpush_post_types[]" value="<?php echo $post_type->name; ?>" <?php echo !empty(get_option('cleverpush_post_types')) && in_array($post_type->name, get_option('cleverpush_post_types')) ? 'checked' : ''; ?> />
 											<?php echo $post_type->labels->singular_name; ?>
 										</div>
@@ -1101,16 +1162,16 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						</tr>
 
 						 <tr valign="top">
-							<th scope="row"><?php _e('Enable Domain Replacement', 'cleverpush'); ?></th>
+							<th scope="row"><?php _e('Domain Replacement', 'cleverpush'); ?></th>
 							<td>
-								<input type="checkbox" name="enable_domain_replacement" <?php echo get_option('enable_domain_replacement') == 'on' ? 'checked' : ''; ?> id="enable_domain_replacement" />
+								<input type="checkbox" name="cleverpush_enable_domain_replacement" <?php echo get_option('cleverpush_enable_domain_replacement') == 'on' ? 'checked' : ''; ?> id="cleverpush_enable_domain_replacement" />
 								<?php _e('Domain Replacement enabled', 'cleverpush'); ?>
 							</td>
 						</tr>
 						<tr valign="top" class="disp-domain">
 							<th scope="row"><?php _e('Replacement Domain', 'cleverpush'); ?></th>
-							<td><input type="text" name="replacement_domain"
-									value="<?php echo get_option('replacement_domain'); ?>" style="width: 320px;"/></td>
+							<td><input type="text" name="cleverpush_replacement_domain"
+									value="<?php echo get_option('cleverpush_replacement_domain'); ?>" style="width: 320px;"/></td>
 						</tr>
 					</table>
 
@@ -1119,18 +1180,18 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				</form>
 				<script>
 				jQuery(document).ready(function() {
-					//set initial state.
-					<?php if(get_option('enable_domain_replacement') == 'on'){ ?>
-					jQuery('.disp-domain').show();
-					<?php }else{ ?>
+					<?php if (get_option('cleverpush_enable_domain_replacement') == 'on') { ?>
+						jQuery('.disp-domain').show();
+					<?php } else { ?>
 						jQuery('.disp-domain').hide();
 					<?php } ?>
 
-					jQuery('#enable_domain_replacement').change(function() {
-						if(this.checked) {
+					jQuery('#cleverpush_enable_domain_replacement').change(function() {
+						if (this.checked) {
 							jQuery('.disp-domain').show();
-						}else jQuery('.disp-domain').hide();
-						
+						} else {
+							jQuery('.disp-domain').hide();
+						}
 					});
 				});
 				</script>

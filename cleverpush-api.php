@@ -55,19 +55,20 @@ class CleverPush_Api
     {
         $channel_id = get_option('cleverpush_channel_id');
 
-        if(get_option('enable_domain_replacement') == 'on'){
-            $option_url=get_option('replacement_domain');
-            if($option_url !=""){
-                $parseurl=parse_url($url);
-                if($parseurl){
-                    $host=$parseurl['host'];
-                    $url=str_replace($host,$option_url,$url);
+        if (get_option('cleverpush_enable_domain_replacement') == 'on'){
+            $option_url = get_option('cleverpush_replacement_domain');
+            if (!empty($option_url)) {
+                $parsed_url = parse_url($url);
+                if ($parsed_url) {
+                    $host = $parsed_url['host'];
+                    if (!empty($host)) {
+                        $url = str_replace($host, $option_url, $url);
+                    }
                 }
             }
         }
         
-        if (empty($channel_id))
-        {
+        if (empty($channel_id)) {
             return null;
         }
 
@@ -90,8 +91,7 @@ class CleverPush_Api
 
     public static function update_channel($channel_id, $params = array())
     {
-        if (empty($channel_id))
-        {
+        if (empty($channel_id)) {
             return null;
         }
 

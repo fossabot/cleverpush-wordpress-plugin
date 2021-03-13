@@ -5,7 +5,7 @@ Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
 Tested up to: 5.6
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,10 @@ Please enter your API keys in the plugin's settings and select a channel. If no 
 If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
+
+= 1.5.0 =
+* Added ability to replace domains in Notification URLs automatically
+* Added cleverpush_send and cleverpush_settings capabilities
 
 = 1.4.0 =
 * Added ability that CleverPush can optionally access unpublished posts to load metadata like and title, image

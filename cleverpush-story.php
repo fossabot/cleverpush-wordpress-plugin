@@ -13,4 +13,3 @@ $content = get_transient( 'cleverpush_story_' . $storyId . '_content');
 echo $content;
 
 ?>
-
