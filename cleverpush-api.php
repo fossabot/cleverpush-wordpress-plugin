@@ -55,6 +55,17 @@ class CleverPush_Api
     {
         $channel_id = get_option('cleverpush_channel_id');
 
+        if(get_option('enable_domain_replacement') == 'on'){
+            $option_url=get_option('replacement_domain');
+            if($option_url !=""){
+                $parseurl=parse_url($url);
+                if($parseurl){
+                    $host=$parseurl['host'];
+                    $url=str_replace($host,$option_url,$url);
+                }
+            }
+        }
+        
         if (empty($channel_id))
         {
             return null;

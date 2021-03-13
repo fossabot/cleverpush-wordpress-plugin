@@ -885,6 +885,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_stories_enabled');
 			register_setting('cleverpush_options', 'cleverpush_post_types');
 			register_setting('cleverpush_options', 'cleverpush_preview_access_enabled');
+			register_setting('cleverpush_options', 'default_replacement_domain');
+			register_setting('cleverpush_options', 'replacement_domain');
 		}
 
 		public function javascript()
@@ -1098,11 +1100,40 @@ if ( ! class_exists( 'CleverPush' ) ) :
 							</td>
 						</tr>
 
+						 <tr valign="top">
+							<th scope="row"><?php _e('Enable Domain Replacement', 'cleverpush'); ?></th>
+							<td>
+								<input type="checkbox" name="enable_domain_replacement" <?php echo get_option('enable_domain_replacement') == 'on' ? 'checked' : ''; ?> id="enable_domain_replacement" />
+								<?php _e('Domain Replacement enabled', 'cleverpush'); ?>
+							</td>
+						</tr>
+						<tr valign="top" class="disp-domain">
+							<th scope="row"><?php _e('Replacement Domain', 'cleverpush'); ?></th>
+							<td><input type="text" name="replacement_domain"
+									value="<?php echo get_option('replacement_domain'); ?>" style="width: 320px;"/></td>
+						</tr>
 					</table>
 
 					<p class="submit"><input type="submit" class="button-primary"
 											 value="<?php _e('Save Changes', 'cleverpush') ?>"/></p>
 				</form>
+				<script>
+				jQuery(document).ready(function() {
+					//set initial state.
+					<?php if(get_option('enable_domain_replacement') == 'on'){ ?>
+					jQuery('.disp-domain').show();
+					<?php }else{ ?>
+						jQuery('.disp-domain').hide();
+					<?php } ?>
+
+					jQuery('#enable_domain_replacement').change(function() {
+						if(this.checked) {
+							jQuery('.disp-domain').show();
+						}else jQuery('.disp-domain').hide();
+						
+					});
+				});
+				</script>
 
 				<?php if (!empty($api_key_private) && get_option('cleverpush_stories_enabled') == 'on'): ?>
 					<hr />
@@ -1137,7 +1168,6 @@ if ( ! class_exists( 'CleverPush' ) ) :
                     }
                 }
 			</script>
-
 			<?php
 			$last_error = get_option('cleverpush_notification_error');
 			update_option('cleverpush_notification_error', null);
