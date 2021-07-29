@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.5.0
+Version: 1.5.1
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -935,7 +935,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_channel');
 			register_setting('cleverpush_options', 'cleverpush_channel_id');
 			register_setting('cleverpush_options', 'cleverpush_channel_subdomain');
-            register_setting('cleverpush_options', 'cleverpush_channel_hidden_notification_settings');
+      register_setting('cleverpush_options', 'cleverpush_channel_hidden_notification_settings');
 			register_setting('cleverpush_options', 'cleverpush_apikey_private');
 			register_setting('cleverpush_options', 'cleverpush_apikey_public');
 			register_setting('cleverpush_options', 'cleverpush_notification_title_required');
@@ -951,7 +951,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			$cleverpush_id = get_option('cleverpush_channel_id');
 			if (!empty($cleverpush_id)) {
 				// echo "<script>window.cleverPushConfig = { plugin: 'wordpress', serviceWorkerFile: '/wp-content/plugins/" . plugin_basename(plugin_dir_path( __FILE__ ) . '/assets/cleverpush-worker.js.php') . "' };</script>\n";
-				echo "<script src=\"//static.cleverpush.com/channel/loader/" . $cleverpush_id . ".js\" async></script>\n";
+
+        $plugin_data = get_file_data(__FILE__, array('Version' => 'Version'), false);
+        $plugin_version = $plugin_data['Version'];
+
+				echo "\n<script src=\"https://static.cleverpush.com/channel/loader/" . $cleverpush_id . ".js?ver=" . $plugin_version . "\" async></script>\n";
 			}
 		}
 
