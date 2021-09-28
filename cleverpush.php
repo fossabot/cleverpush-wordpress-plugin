@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.5.1
+Version: 1.5.2
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -1109,7 +1109,14 @@ if ( ! class_exists( 'CleverPush' ) ) :
 											<?php
 											foreach ($channels as $channel) {
 												?>
-												<option value="<?php echo $channel->_id; ?>" <?php echo $selected_channel_id == $channel->_id ? 'selected' : ''; ?> data-subdomain="<?php echo $channel->identifier; ?>" data-hidden-notification-settings="<?php echo implode($channel->hiddenNotificationSettings); ?>"><?php echo $channel->name; ?></option>
+												<option
+                          value="<?php echo $channel->_id; ?>"
+                          <?php echo $selected_channel_id == $channel->_id ? 'selected' : ''; ?>
+                          data-subdomain="<?php echo $channel->identifier; ?>"
+                          data-hidden-notification-settings="<?php echo isset($channel->hiddenNotificationSettings) && is_array($channel->hiddenNotificationSettings) ? implode($channel->hiddenNotificationSettings) : ''; ?>"
+                        >
+                          <?php echo $channel->name; ?>
+                        </option>
 												<?php
 											}
 											?>
