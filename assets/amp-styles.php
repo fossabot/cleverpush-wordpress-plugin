@@ -1,0 +1,83 @@
+<?php
+
+function cleverpush_amp_styles() {
+  $button_background = 'green';
+  $button_color = '#fff';
+
+  $channel = get_option('cleverpush_channel_config');
+  if (!empty($channel)) {
+    if (!empty($channel->confirmAlertAllowButtonStyle) && !empty($channel->confirmAlertAllowButtonStyle->backgroundColor)) {
+      $button_background = $channel->confirmAlertAllowButtonStyle->backgroundColor;
+      if (!empty($channel->confirmAlertAllowButtonStyle->color)) {
+        $button_color = $channel->confirmAlertAllowButtonStyle->color;
+      }
+    } else if (!empty($channel->notificationBellColor)) {
+      $button_background = $channel->notificationBellColor;
+    }
+  }
+
+  ?>
+
+.cleverpush-confirm {
+  left: 10px;
+  right: 10px;
+  padding: 15px;
+  bottom: 0;
+  position: fixed;
+  z-index: 9;
+  background-color: #fff;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.cleverpush-confirm-title {
+  font-size: 17px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.cleverpush-confirm-text {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #555;
+  line-height: 1.65;
+}
+
+.cleverpush-confirm-buttons {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.cleverpush-confirm-button {
+  color: #555;
+  background-color: transparent;
+  padding: 10px;
+  width: 50%;
+  margin-right: 5px;
+  text-align: center;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.cleverpush-confirm-button:hover {
+  opacity: 0.9;
+}
+
+.cleverpush-confirm-button-allow {
+  background-color: <?php echo $button_background; ?>;
+  color: #fff;
+  margin-left: 5px;
+  margin-right: 0;
+}
+
+amp-consent {
+  background: none;
+}
+
+  <?php
+}

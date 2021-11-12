@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.5.3
+Version: 1.6.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -20,7 +20,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 	class CleverPush
 	{
 		/**
-		 * varruct the plugin.
+		 * construct the plugin.
 		 */
 		public function __construct()
 		{
@@ -66,6 +66,23 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				add_filter('pre_get_posts', array($this, 'show_public_preview'));
 				add_filter('query_vars', array($this, 'add_query_var'));
 				add_filter('wpseo_whitelist_permalink_vars', array($this, 'add_query_var'));
+			}
+
+      if (
+				get_option('cleverpush_amp_enabled') == 'on'
+			) {
+        // Standard mode
+				add_action('wp_head', array($this, 'amp_head_css'));
+        if (function_exists('wp_body_open')) {
+          add_action('wp_body_open', array($this, 'amp_post_template_body_open'));
+        } else {
+          add_action('wp_footer', array($this, 'amp_post_template_body_open'));
+        }
+				add_action('wp_footer', array($this, 'amp_post_template_footer'));
+        // Classic mode
+				add_action('amp_post_template_css', array($this, 'amp_post_template_css'));
+				add_action('amp_post_template_body_open', array($this, 'amp_post_template_body_open'));
+				add_action('amp_post_template_footer', array($this, 'amp_post_template_footer'));
 			}
 
 			load_plugin_textdomain(
@@ -258,11 +275,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						<th scope="row">Zwischenspeicher</th>
 						<td>
 							<p class="text-muted">Die Inhalte deiner Stories werden alle 30 Minuten neu von den CleverPush Servern geladen. Hier kannst du den Zwischenspeicher dafür leeren:</p>
-							<!--
-						<?php if (!empty($cleverpushId) && !empty($fetchTime)) { ?>
-							<p>Zuletzt geladen: <strong><?php echo date('d.m.Y H:i', $fetchTime); ?></strong></p>
-						<?php } ?>
-						-->
+
 							<br />
 							<p><?php submit_button( 'Zwischenspeicher leeren', 'primary', 'clear_cache', false ); ?></p>
 						</td>
@@ -330,40 +343,40 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				$cleverpush_topics = array();
 
 				if (empty($hidden_notification_settings) || strpos($hidden_notification_settings, 'topics') === false) {
-                    $response = wp_remote_get( CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/topics', array(
-                            'timeout' => 10,
-                            'headers' => array(
-                                'authorization' => $api_key_private
-                            )
-                        )
-                    );
+          $response = wp_remote_get( CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/topics', array(
+              'timeout' => 10,
+              'headers' => array(
+                'authorization' => $api_key_private
+              )
+            )
+          );
 
-                    if (is_wp_error($response)) {
-                        $topics_data = get_transient( 'cleverpush_topics_response');
+          if (is_wp_error($response)) {
+            $topics_data = get_transient( 'cleverpush_topics_response');
 
-                        if (empty($topics_data)) {
-                            ?>
-                            <div class="error notice">
-                                <p><?php echo $response->get_error_message(); ?></p>
-                            </div>
-                            <?php
-                        }
-                    } else {
-                        $body = wp_remote_retrieve_body($response);
-                        $topics_data = json_decode($body);
+            if (empty($topics_data)) {
+                ?>
+                <div class="error notice">
+                    <p><?php echo $response->get_error_message(); ?></p>
+                </div>
+                <?php
+            }
+          } else {
+            $body = wp_remote_retrieve_body($response);
+            $topics_data = json_decode($body);
 
-                        set_transient( 'cleverpush_topics_response', $topics_data, 60 * 60 * 24 * 30 );
-                    }
+            set_transient( 'cleverpush_topics_response', $topics_data, 60 * 60 * 24 * 30 );
+          }
 
-                    if (isset($topics_data)) {
-                        if (isset($topics_data->topics)) {
-                            $cleverpush_topics = $topics_data->topics;
-                        }
-                        if (isset($topics_data->topicsRequiredField) && $topics_data->topicsRequiredField) {
-                            $cleverpush_topics_required = true;
-                        }
-                    }
-                }
+          if (isset($topics_data)) {
+            if (isset($topics_data->topics)) {
+              $cleverpush_topics = $topics_data->topics;
+            }
+            if (isset($topics_data->topicsRequiredField) && $topics_data->topicsRequiredField) {
+              $cleverpush_topics_required = true;
+            }
+          }
+      }
 
 				?>
 
@@ -932,10 +945,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 		public function register_settings()
 		{
-			register_setting('cleverpush_options', 'cleverpush_channel');
+			register_setting('cleverpush_options', 'cleverpush_channel_config');
 			register_setting('cleverpush_options', 'cleverpush_channel_id');
 			register_setting('cleverpush_options', 'cleverpush_channel_subdomain');
       register_setting('cleverpush_options', 'cleverpush_channel_hidden_notification_settings');
+      register_setting('cleverpush_options', 'cleverpush_channel_worker_file');
 			register_setting('cleverpush_options', 'cleverpush_apikey_private');
 			register_setting('cleverpush_options', 'cleverpush_apikey_public');
 			register_setting('cleverpush_options', 'cleverpush_notification_title_required');
@@ -944,20 +958,31 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_preview_access_enabled');
 			register_setting('cleverpush_options', 'cleverpush_enable_domain_replacement');
 			register_setting('cleverpush_options', 'cleverpush_replacement_domain');
+			register_setting('cleverpush_options', 'cleverpush_amp_enabled');
 		}
 
 		public function javascript()
 		{
 			$cleverpush_id = get_option('cleverpush_channel_id');
-			if (!empty($cleverpush_id)) {
-				// echo "<script>window.cleverPushConfig = { plugin: 'wordpress', serviceWorkerFile: '/wp-content/plugins/" . plugin_basename(plugin_dir_path( __FILE__ ) . '/assets/cleverpush-worker.js.php') . "' };</script>\n";
-
+      $wp_worker_file = get_option('cleverpush_channel_worker_file') == true;
+			if (!$this->is_amp_request() && !empty($cleverpush_id)) {
         $plugin_data = get_file_data(__FILE__, array('Version' => 'Version'), false);
         $plugin_version = $plugin_data['Version'];
 
+        if ($wp_worker_file) {
+          echo "<script>window.cleverPushConfig = { serviceWorkerFile: '/wp-content/plugins/" . plugin_basename(plugin_dir_path( __FILE__ ) . '/cleverpush-worker.js.php') . "' };</script>\n";
+        }
 				echo "\n<script src=\"https://static.cleverpush.com/channel/loader/" . $cleverpush_id . ".js?ver=" . $plugin_version . "\" async></script>\n";
 			}
 		}
+
+    public function get_plugin_path() {
+      return '/wp-content/plugins/' . plugin_basename(plugin_dir_path( __FILE__ ));
+    }
+
+    public function get_worker_url() {
+      return $this->get_plugin_path() . '/cleverpush-worker.js.php';
+    }
 
 		public function plugin_options()
 		{
@@ -981,23 +1006,45 @@ if ( ! class_exists( 'CleverPush' ) ) :
 
 				if ( is_wp_error( $response ) ) {
 					?>
-					<div class="error notice">
-						<p><?php echo $response->get_error_message(); ?></p>
-					</div>
+            <div class="error notice">
+              <p><?php echo $response->get_error_message(); ?></p>
+            </div>
 					<?php
+
 				} else {
 					$body = wp_remote_retrieve_body( $response );
 					$data = json_decode( $body );
 					if (isset($data->channels)) {
-						$channels = $data->channels;
+						foreach ($data->channels as $channel) {
+              if ($channel->type !== 'web') {
+                continue;
+              }
 
-						foreach ($channels as $channel) {
+              $channels[] = $channel;
+
 							if (!empty($channel) && $channel->_id == $selected_channel_id) {
 								$selected_channel = $channel;
-								break;
+
+                update_option('cleverpush_channel_config', $channel);
+                update_option('cleverpush_channel_subdomain', $channel->identifier);
+                update_option('cleverpush_channel_hidden_notification_settings', isset($channel->hiddenNotificationSettings) && is_array($channel->hiddenNotificationSettings) ? implode($channel->hiddenNotificationSettings) : '');
+
+                $worker_file = !empty($channel->serviceWorkerFile) && strpos($channel->serviceWorkerFile, '/cleverpush-worker.js.php') ? $channel->serviceWorkerFile : '/cleverpush-worker.js';
+                $response = wp_remote_get(get_site_url() . $worker_file, [
+                  'timeout' => 3,
+                ]);
+                if (is_wp_error ( $response )) {
+                  update_option('cleverpush_channel_worker_file', true);
+                } else {
+                  update_option('cleverpush_channel_worker_file', false);
+                }
 							}
 						}
 					}
+
+          usort($channels, function($a, $b) {
+            return strcmp($a->name, $b->name);
+          });
 				}
 
 				if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['cleverpush_action'] == 'synchronize_stories') {
@@ -1085,17 +1132,14 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				<p><?php echo sprintf(__('The API key can be found in the %s.', 'cleverpush'), '<a href="https://cleverpush.com/app/settings/api" target="_blank">' . __('API settings', 'cleverpush') . '</a>'); ?></p>
 
 				<form method="post" action="options.php">
-					<input type="hidden" name="cleverpush_channel_subdomain" value="<?php echo get_option('cleverpush_channel_subdomain'); ?>">
-                    <input type="hidden" name="cleverpush_channel_hidden_notification_settings" value="<?php echo get_option('cleverpush_channel_hidden_notification_settings'); ?>">
+          <?php settings_fields('cleverpush_options'); ?>
 
-                    <?php settings_fields('cleverpush_options'); ?>
-
-                    <table class="form-table">
+          <table class="form-table">
 
 						<tr valign="top">
 							<th scope="row"><?php _e('Private API-Key', 'cleverpush'); ?></th>
 							<td><input type="text" name="cleverpush_apikey_private"
-									value="<?php echo get_option('cleverpush_apikey_private'); ?>" style="width: 320px;"/></td>
+									value="<?php echo get_option('cleverpush_apikey_private'); ?>" style="width: 320px; font-family: monospace;"/></td>
 						</tr>
 
 						<tr valign="top">
@@ -1105,15 +1149,13 @@ if ( ! class_exists( 'CleverPush' ) ) :
 									if (!empty($channels) && count($channels) > 0) {
 										?>
 										<select name="cleverpush_channel_id">
-											<option disabled value="" <?php echo empty($selected_channel_id) ? 'selected' : ''; ?>><?php _e('Select Channel', 'cleverpush'); ?>...</option>
+											<option value="" <?php echo empty($selected_channel_id) ? 'selected' : ''; ?>><?php _e('Select Channel', 'cleverpush'); ?>...</option>
 											<?php
 											foreach ($channels as $channel) {
 												?>
 												<option
                           value="<?php echo $channel->_id; ?>"
                           <?php echo $selected_channel_id == $channel->_id ? 'selected' : ''; ?>
-                          data-subdomain="<?php echo $channel->identifier; ?>"
-                          data-hidden-notification-settings="<?php echo isset($channel->hiddenNotificationSettings) && is_array($channel->hiddenNotificationSettings) ? implode($channel->hiddenNotificationSettings) : ''; ?>"
                         >
                           <?php echo $channel->name; ?>
                         </option>
@@ -1136,8 +1178,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						<tr valign="top">
 							<th scope="row"><?php _e('Notification headlines', 'cleverpush'); ?></th>
 							<td>
-								<input type="checkbox" name="cleverpush_notification_title_required" <?php echo get_option('cleverpush_notification_title_required') == 'on' ? 'checked' : ''; ?> />
-								<?php _e('Custom notification headline required', 'cleverpush'); ?>
+								<input type="checkbox" name="cleverpush_notification_title_required" id="cleverpush_notification_title_required" <?php echo get_option('cleverpush_notification_title_required') == 'on' ? 'checked' : ''; ?> />
+                <label for="cleverpush_notification_title_required"><?php _e('Custom notification headline required', 'cleverpush'); ?></label>
 							</td>
 						</tr>
 
@@ -1147,8 +1189,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 									<?php foreach ( get_post_types([ 'public' => true ], 'objects') as $post_type ): ?>
 									<?php if ($post_type->name !== 'post'): ?>
 										<div style="margin-bottom: 5px;">
-											<input type="checkbox" name="cleverpush_post_types[]" value="<?php echo $post_type->name; ?>" <?php echo !empty(get_option('cleverpush_post_types')) && in_array($post_type->name, get_option('cleverpush_post_types')) ? 'checked' : ''; ?> />
-											<?php echo $post_type->labels->singular_name; ?>
+											<input type="checkbox" name="cleverpush_post_types[]" id="cleverpush_post_types-<?php echo $post_type->name; ?>" value="<?php echo $post_type->name; ?>" <?php echo !empty(get_option('cleverpush_post_types')) && in_array($post_type->name, get_option('cleverpush_post_types')) ? 'checked' : ''; ?> />
+                      <label for="cleverpush_post_types-<?php echo $post_type->name; ?>"><?php echo $post_type->labels->singular_name; ?></label>
 										</div>
 									<?php endif; ?>
 
@@ -1159,49 +1201,61 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						<tr valign="top">
 							<th scope="row"><?php _e('CleverPush stories', 'cleverpush'); ?></th>
 							<td>
-								<input type="checkbox" name="cleverpush_stories_enabled" <?php echo get_option('cleverpush_stories_enabled') == 'on' ? 'checked' : ''; ?> />
-								<?php _e('CleverPush stories enabled', 'cleverpush'); ?>
+								<input type="checkbox" name="cleverpush_stories_enabled" id="cleverpush_stories_enabled" <?php echo get_option('cleverpush_stories_enabled') == 'on' ? 'checked' : ''; ?> />
+                <label for="cleverpush_stories_enabled"><?php _e('CleverPush stories enabled', 'cleverpush'); ?></label>
 							</td>
 						</tr>
 
 						<tr valign="top">
 							<th scope="row"><?php _e('Unpublished posts', 'cleverpush'); ?></th>
 							<td>
-								<input type="checkbox" name="cleverpush_preview_access_enabled" <?php echo get_option('cleverpush_preview_access_enabled') == 'on' ? 'checked' : ''; ?> />
-								<?php _e('Allow CleverPush to access unpublished posts in order to load preview data', 'cleverpush'); ?>
+								<input type="checkbox" name="cleverpush_preview_access_enabled" id="cleverpush_preview_access_enabled" <?php echo get_option('cleverpush_preview_access_enabled') == 'on' ? 'checked' : ''; ?> />
+                <label for="cleverpush_preview_access_enabled"><?php _e('Allow CleverPush to access unpublished posts in order to load preview data', 'cleverpush'); ?></label>
 							</td>
 						</tr>
 
-						 <tr valign="top">
+						<tr valign="top">
 							<th scope="row"><?php _e('Domain Replacement', 'cleverpush'); ?></th>
 							<td>
-								<input type="checkbox" name="cleverpush_enable_domain_replacement" <?php echo get_option('cleverpush_enable_domain_replacement') == 'on' ? 'checked' : ''; ?> id="cleverpush_enable_domain_replacement" />
-								<?php _e('Domain Replacement enabled', 'cleverpush'); ?>
+								<input type="checkbox" name="cleverpush_enable_domain_replacement" id="cleverpush_enable_domain_replacement" <?php echo get_option('cleverpush_enable_domain_replacement') == 'on' ? 'checked' : ''; ?> id="cleverpush_enable_domain_replacement" />
+                <label for="cleverpush_enable_domain_replacement"><?php _e('Domain Replacement enabled', 'cleverpush'); ?></label>
 							</td>
 						</tr>
-						<tr valign="top" class="disp-domain">
+						<tr valign="top" class="cleverpush-replacement-domain">
 							<th scope="row"><?php _e('Replacement Domain', 'cleverpush'); ?></th>
 							<td><input type="text" name="cleverpush_replacement_domain"
 									value="<?php echo get_option('cleverpush_replacement_domain'); ?>" style="width: 320px;"/></td>
 						</tr>
+
+            <?php if (function_exists('amp_is_request')): ?>
+              <tr valign="top">
+                <th scope="row"><?php _e('AMP Integration', 'cleverpush'); ?></th>
+                <td>
+                  <input type="checkbox" name="cleverpush_amp_enabled" id="cleverpush_amp_enabled" <?php echo get_option('cleverpush_amp_enabled') == 'on' ? 'checked' : ''; ?> id="cleverpush_amp_enabled" />
+                  <label for="cleverpush_amp_enabled"><?php _e('AMP Integration enabled', 'cleverpush'); ?></label>
+                </td>
+              </tr>
+            <?php endif; ?>
 					</table>
 
-					<p class="submit"><input type="submit" class="button-primary"
-											 value="<?php _e('Save Changes', 'cleverpush') ?>"/></p>
+					<p class="submit">
+            <input type="submit" class="button-primary" value="<?php _e('Save Changes', 'cleverpush') ?>"/>
+          </p>
 				</form>
+
 				<script>
 				jQuery(document).ready(function() {
 					<?php if (get_option('cleverpush_enable_domain_replacement') == 'on') { ?>
-						jQuery('.disp-domain').show();
+						jQuery('.cleverpush-replacement-domain').show();
 					<?php } else { ?>
-						jQuery('.disp-domain').hide();
+						jQuery('.cleverpush-replacement-domain').hide();
 					<?php } ?>
 
 					jQuery('#cleverpush_enable_domain_replacement').change(function() {
 						if (this.checked) {
-							jQuery('.disp-domain').show();
+							jQuery('.cleverpush-replacement-domain').show();
 						} else {
-							jQuery('.disp-domain').hide();
+							jQuery('.cleverpush-replacement-domain').hide();
 						}
 					});
 				});
@@ -1219,42 +1273,37 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			</div>
 
 			<script>
-				var subdomain_input = document.querySelector('input[name="cleverpush_channel_subdomain"]');
-                var hiddenNotificationSettings_input = document.querySelector('input[name="cleverpush_channel_hidden_notification_settings"]');
+				var config_input = document.querySelector('input[name="cleverpush_channel_config"]');
+
 				document.querySelector('select[name="cleverpush_channel_id').addEventListener('change', function() {
-				    if (subdomain_input) {
-                        subdomain_input.value = this.querySelector(':checked').getAttribute('data-subdomain');
-                    }
-                    if (hiddenNotificationSettings_input) {
-                        hiddenNotificationSettings_input.value = this.querySelector(':checked').getAttribute('data-hidden-notification-settings');
-                    }
+          if (config_input) {
+            config_input.value = this.querySelector(':checked').getAttribute('data-config');
+          }
 				});
 
 				var currChecked = document.querySelector('select[name="cleverpush_channel_id').querySelector(':checked');
 				if (currChecked) {
-                    if (subdomain_input) {
-                        subdomain_input.value = currChecked.getAttribute('data-subdomain');
-                    }
-                    if (hiddenNotificationSettings_input) {
-                        hiddenNotificationSettings_input.value = currChecked.getAttribute('data-hidden-notification-settings');
-                    }
-                }
+          if (config_input) {
+            config_input.value = currChecked.getAttribute('data-config');
+          }
+        }
 			</script>
-			<?php
-			$last_error = get_option('cleverpush_notification_error');
-			update_option('cleverpush_notification_error', null);
+			
+      <?php
+        $last_error = get_option('cleverpush_notification_error');
+        update_option('cleverpush_notification_error', null);
 
-			if (!empty($last_error)) {
-				?>
+			  if (!empty($last_error)) {
+          ?>
 
-				<div class="error notice">
-					<?php
-					echo $last_error;
-					?>
-				</div>
+          <div class="error notice">
+            <?php
+            echo $last_error;
+            ?>
+          </div>
 
-				<?php
-			}
+          <?php
+			  }
 		}
 
 		public function cleverpush_story_template($single) {
@@ -1301,6 +1350,91 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			}
 			return $single;
 		}
+
+    public function is_amp_request() {
+      if (function_exists('amp_is_request')) {
+        return amp_is_request();
+      }
+      return false;
+    }
+
+    public function amp_post_template_css() {
+      include 'assets/amp-styles.php';
+      echo cleverpush_amp_styles();
+    }
+
+    public function amp_head_css() {
+      if ($this->is_amp_request()) {
+        include 'assets/amp-styles.php';
+        echo '<style>';
+        echo cleverpush_amp_styles();
+        echo '</style>';
+      }
+    }
+
+    public function amp_post_template_body_open() {
+      if ($this->is_amp_request()) {
+        $confirm_title = 'Push Nachrichten aktivieren';
+        $confirm_text = 'Kann jederzeit in den Browser Einstellungen deaktiviert werden';
+        $allow_text = 'Aktivieren';
+        $deny_text = 'Nein, danke';
+
+        $channel = get_option('cleverpush_channel_config');
+        if (!empty($channel) && !empty($channel->alertLocalization)) {
+          if (!empty($channel->alertLocalization->title)) {
+            $confirm_title = $channel->alertLocalization->title;
+          }
+          if (!empty($channel->alertLocalization->info)) {
+            $confirm_text = $channel->alertLocalization->info;
+          }
+          if (!empty($channel->alertLocalization->allow)) {
+            $allow_text = $channel->alertLocalization->allow;
+          }
+          if (!empty($channel->alertLocalization->deny)) {
+            $deny_text = $channel->alertLocalization->deny;
+          }
+        }
+
+        ?>
+          <amp-script layout="fixed-height" height="1" src="<?php echo get_site_url() . $this->get_plugin_path(); ?>/cleverpush-amp.js.php">
+            <div>&nbsp;</div>
+
+            <amp-web-push-widget visibility="unsubscribed" layout="fixed" width="300" height="300" hidden [hidden]="cleverpushConfirmVisible != true">
+              <div class="cleverpush-confirm">
+                <div class="cleverpush-confirm-title"><?php echo $confirm_title; ?></div>
+
+                <div class="cleverpush-confirm-text"><?php echo $confirm_text; ?></div>
+
+                <div class="cleverpush-confirm-buttons">
+                  <button id="cleverpush-button-deny" class="cleverpush-confirm-button" on="tap:AMP.setState({cleverpushConfirmVisible: false})">
+                    <?php echo $deny_text; ?>
+                  </button>
+
+                  <button id="cleverpush-button-allow" class="cleverpush-confirm-button cleverpush-confirm-button-allow" on="tap:amp-web-push.subscribe">
+                    <?php echo $allow_text; ?>
+                  </button>
+                </div>
+              </div>
+            </amp-web-push-widget>
+          </amp-script>
+        <?php
+      }
+    }
+
+    public function amp_post_template_footer() {
+      if ($this->is_amp_request()) {
+        ?>
+          <amp-web-push
+            id="amp-web-push"
+            layout="nodisplay"
+            helper-iframe-url="<?php echo get_site_url() . $this->get_plugin_path(); ?>/assets/cleverpush-amp-helper-frame.html"
+            permission-dialog-url="<?php echo get_site_url() . $this->get_plugin_path(); ?>/assets/cleverpush-amp-permission-dialog.html"
+            service-worker-url="<?php echo get_site_url() . $this->get_worker_url(); ?>"
+          >
+          </amp-web-push>
+        <?php
+      }
+    }
 	}
 
 	$cleverPush = new CleverPush( __FILE__ );
