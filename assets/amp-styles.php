@@ -70,7 +70,7 @@ function cleverpush_amp_styles() {
 
 .cleverpush-confirm-button-allow {
   background-color: <?php echo $button_background; ?>;
-  color: #fff;
+  color: <?php echo $button_color; ?>;
   margin-left: 5px;
   margin-right: 0;
 }
