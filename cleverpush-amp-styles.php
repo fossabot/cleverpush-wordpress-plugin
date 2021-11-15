@@ -16,18 +16,23 @@ function cleverpush_amp_styles() {
     }
   }
 
+  $position = get_option('cleverpush_amp_widget_position');
+  if (empty($position)) {
+    $position = 'bottom';
+  }
+
   ?>
 
 .cleverpush-confirm {
   left: 10px;
   right: 10px;
   padding: 15px;
-  bottom: 0;
+  <?php echo $position; ?>: 0;
   position: fixed;
-  z-index: 9;
+  z-index: 999;
   background-color: #fff;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
+  border-<?php echo $position; ?>-left-radius: 15px;
+  border-<?php echo $position; ?>-right-radius: 15px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -75,8 +80,8 @@ function cleverpush_amp_styles() {
   margin-right: 0;
 }
 
-amp-consent {
-  background: none;
+amp-web-push-widget.amp-invisible {
+  visibility: initial;
 }
 
   <?php

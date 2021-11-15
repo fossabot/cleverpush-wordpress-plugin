@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.6.1
+Version: 1.6.2
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -959,6 +959,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_enable_domain_replacement');
 			register_setting('cleverpush_options', 'cleverpush_replacement_domain');
 			register_setting('cleverpush_options', 'cleverpush_amp_enabled');
+			register_setting('cleverpush_options', 'cleverpush_amp_widget_position');
 		}
 
 		public function javascript()
@@ -1235,6 +1236,15 @@ if ( ! class_exists( 'CleverPush' ) ) :
                   <label for="cleverpush_amp_enabled"><?php _e('AMP Integration enabled', 'cleverpush'); ?></label>
                 </td>
               </tr>
+              <tr valign="top">
+                <th scope="row"><?php _e('AMP Widget Position', 'cleverpush'); ?></th>
+                <td>
+                  <input type="radio" name="cleverpush_amp_widget_position" id="cleverpush_amp_widget_position" <?php echo empty(get_option('cleverpush_amp_widget_position')) || get_option('cleverpush_amp_widget_position') == 'bottom' ? 'checked' : ''; ?> value="bottom" id="cleverpush_amp_widget_position_bottom" />
+                  <label for="cleverpush_amp_widget_position_bottom"><?php _e('Bottom', 'cleverpush'); ?></label>
+                  <input type="radio" name="cleverpush_amp_widget_position" id="cleverpush_amp_widget_position" <?php echo get_option('cleverpush_amp_widget_position') == 'top' ? 'checked' : ''; ?> value="top" id="cleverpush_amp_widget_position_top" style="margin-left: 10px;" />
+                  <label for="cleverpush_amp_widget_position_top"><?php _e('Top', 'cleverpush'); ?></label>
+                </td>
+              </tr>
             <?php endif; ?>
 					</table>
 
@@ -1293,7 +1303,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
         $last_error = get_option('cleverpush_notification_error');
         update_option('cleverpush_notification_error', null);
 
-			  if (!empty($last_error)) {
+        if (!empty($last_error)) {
           ?>
 
           <div class="error notice">
@@ -1303,7 +1313,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
           </div>
 
           <?php
-			  }
+        }
 		}
 
 		public function cleverpush_story_template($single) {
@@ -1399,7 +1409,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
           <amp-script layout="fixed-height" height="1" src="<?php echo get_site_url() . $this->get_plugin_path(); ?>/cleverpush-amp.js.php">
             <div>&nbsp;</div>
 
-            <amp-web-push-widget visibility="unsubscribed" layout="fixed" width="300" height="300" hidden [hidden]="cleverpushConfirmVisible != true">
+            <amp-web-push-widget visibility="unsubscribed" layout="fixed" width="300" height="300" hidden data-amp-bind-hidden="cleverpushConfirmVisible != true">
               <div class="cleverpush-confirm">
                 <div class="cleverpush-confirm-title"><?php echo $confirm_title; ?></div>
 
@@ -1427,8 +1437,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
           <amp-web-push
             id="amp-web-push"
             layout="nodisplay"
-            helper-iframe-url="<?php echo get_site_url() . $this->get_plugin_path(); ?>/assets/cleverpush-amp-helper-frame.html"
-            permission-dialog-url="<?php echo get_site_url() . $this->get_plugin_path(); ?>/assets/cleverpush-amp-permission-dialog.html"
+            helper-iframe-url="<?php echo get_site_url() . $this->get_plugin_path(); ?>/cleverpush-amp-helper-frame.html"
+            permission-dialog-url="<?php echo get_site_url() . $this->get_plugin_path(); ?>/cleverpush-amp-permission-dialog.html"
             service-worker-url="<?php echo get_site_url() . $this->get_worker_url(); ?>"
           >
           </amp-web-push>
