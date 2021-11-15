@@ -20,6 +20,7 @@ function cleverpush_amp_styles() {
   if (empty($position)) {
     $position = 'bottom';
   }
+  $border_position = $position == 'top' ? 'bottom' : 'top';
 
   ?>
 
@@ -31,8 +32,8 @@ function cleverpush_amp_styles() {
   position: fixed;
   z-index: 999;
   background-color: #fff;
-  border-<?php echo $position; ?>-left-radius: 15px;
-  border-<?php echo $position; ?>-right-radius: 15px;
+  border-<?php echo $border_position; ?>-left-radius: 15px;
+  border-<?php echo $border_position; ?>-right-radius: 15px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
 }
 
