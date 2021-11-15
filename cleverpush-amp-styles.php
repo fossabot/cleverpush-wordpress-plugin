@@ -81,9 +81,5 @@ function cleverpush_amp_styles() {
   margin-right: 0;
 }
 
-amp-web-push-widget.amp-invisible {
-  visibility: initial;
-}
-
   <?php
 }
