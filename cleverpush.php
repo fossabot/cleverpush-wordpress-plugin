@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.6.2
+Version: 1.6.3
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -958,6 +958,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_preview_access_enabled');
 			register_setting('cleverpush_options', 'cleverpush_enable_domain_replacement');
 			register_setting('cleverpush_options', 'cleverpush_replacement_domain');
+      register_setting('cleverpush_options', 'cleverpush_script_disabled');
 			register_setting('cleverpush_options', 'cleverpush_amp_enabled');
 			register_setting('cleverpush_options', 'cleverpush_amp_widget_position');
 		}
@@ -966,7 +967,11 @@ if ( ! class_exists( 'CleverPush' ) ) :
 		{
 			$cleverpush_id = get_option('cleverpush_channel_id');
       $wp_worker_file = get_option('cleverpush_channel_worker_file') == true;
-			if (!$this->is_amp_request() && !empty($cleverpush_id)) {
+			if (
+        !$this->is_amp_request()
+        && !empty($cleverpush_id)
+        && get_option('cleverpush_script_disabled') != 'on'
+      ) {
         $plugin_data = get_file_data(__FILE__, array('Version' => 'Version'), false);
         $plugin_version = $plugin_data['Version'];
 
@@ -1227,6 +1232,14 @@ if ( ! class_exists( 'CleverPush' ) ) :
 							<td><input type="text" name="cleverpush_replacement_domain"
 									value="<?php echo get_option('cleverpush_replacement_domain'); ?>" style="width: 320px;"/></td>
 						</tr>
+
+            <tr valign="top">
+              <th scope="row"><?php _e('CleverPush Script', 'cleverpush'); ?></th>
+              <td>
+                <input type="checkbox" name="cleverpush_script_disabled" id="cleverpush_script_disabled" <?php echo get_option('cleverpush_script_disabled') == 'on' ? 'checked' : ''; ?> id="cleverpush_script_disabled" />
+                <label for="cleverpush_script_disabled"><?php _e('Do not output CleverPush script', 'cleverpush'); ?></label>
+              </td>
+            </tr>
 
             <?php if (function_exists('amp_is_request')): ?>
               <tr valign="top">
