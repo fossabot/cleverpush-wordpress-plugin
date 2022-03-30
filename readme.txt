@@ -13,11 +13,16 @@ CleverPush lets you send browser push notifications to your users in the simples
 
 == Description ==
 Installing the CleverPush plugin will automatically insert the CleverPush code into your WordPress site. It will also give you the possibility to create a notification when publishing a new post.
-Another great thing is completely automated re-targeting for WooCommerce.
 
 What is CleverPush?
-
 CleverPush lets you send browser push notifications to your users in the simplest way possible.
+
+AMP Support:
+If you are using the classic / reader mode with a custom theme, please make sure your theme supports the following AMP hooks:
+* amp_post_template_body_open
+* amp_post_template_footer
+* amp_post_template_css
+
 
 == Installation ==
 Extract the zip file and just drop the contents in the wp-content/plugins/ directory of your WordPress installation and then activate the Plugin from the Plugins page.
