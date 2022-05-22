@@ -1,6 +1,7 @@
 <?php
 
 $cleverpush_id = null;
+$static_subdomain_suffix = '';
 
 if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) {
     $cleverpush_id = $_GET['channel'];
@@ -22,6 +23,11 @@ if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) {
         require_once( $wpConfigPath );
     
         $cleverpush_id = get_option('cleverpush_channel_id');
+
+        $channel = get_option('cleverpush_channel_config');
+        if (!empty($channel) && !empty($channel->hostingLocation)) {
+          $static_subdomain_suffix = '-' . $channel->hostingLocation;
+        }
     }
 }
 
@@ -30,7 +36,7 @@ header("Content-Type: application/javascript");
 header("X-Robots-Tag: none");
 
 if (!empty($cleverpush_id)) {
-    echo "importScripts('https://static.cleverpush.com/channel/worker/" . $cleverpush_id . ".js');\n";
+    echo "importScripts('https://static" . $static_subdomain_suffix . ".cleverpush.com/channel/worker/" . $cleverpush_id . ".js');\n";
 
 } else {
     echo "// error: no cleverpush channel id found\n";

@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.6.3
+Version: 1.6.4
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -963,6 +963,15 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			register_setting('cleverpush_options', 'cleverpush_amp_widget_position');
 		}
 
+    public function get_static_endpoint() {
+      $channel = get_option('cleverpush_channel_config');
+      $static_subdomain_suffix = '';
+      if (!empty($channel) && !empty($channel->hostingLocation)) {
+        $static_subdomain_suffix = '-' . $channel->hostingLocation;
+      }
+      return "https://static" . $static_subdomain_suffix . ".cleverpush.com";
+    }
+
 		public function javascript()
 		{
 			$cleverpush_id = get_option('cleverpush_channel_id');
@@ -978,7 +987,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
         if ($wp_worker_file) {
           echo "<script>window.cleverPushConfig = { serviceWorkerFile: '/wp-content/plugins/" . plugin_basename(plugin_dir_path( __FILE__ ) . '/cleverpush-worker.js.php') . "' };</script>\n";
         }
-				echo "\n<script src=\"https://static.cleverpush.com/channel/loader/" . $cleverpush_id . ".js?ver=" . $plugin_version . "\" async></script>\n";
+
+				echo "\n<script src=\"" . $this->get_static_endpoint() . "/channel/loader/" . $cleverpush_id . ".js?ver=" . $plugin_version . "\" async></script>\n";
 			}
 		}
 
@@ -1022,7 +1032,7 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					$data = json_decode( $body );
 					if (isset($data->channels)) {
 						foreach ($data->channels as $channel) {
-              if ($channel->type !== 'web') {
+              if (empty($channel->type) || $channel->type !== 'web') {
                 continue;
               }
 
@@ -1294,23 +1304,6 @@ if ( ! class_exists( 'CleverPush' ) ) :
 					</form>
 				<?php endif; ?>
 			</div>
-
-			<script>
-				var config_input = document.querySelector('input[name="cleverpush_channel_config"]');
-
-				document.querySelector('select[name="cleverpush_channel_id').addEventListener('change', function() {
-          if (config_input) {
-            config_input.value = this.querySelector(':checked').getAttribute('data-config');
-          }
-				});
-
-				var currChecked = document.querySelector('select[name="cleverpush_channel_id').querySelector(':checked');
-				if (currChecked) {
-          if (config_input) {
-            config_input.value = currChecked.getAttribute('data-config');
-          }
-        }
-			</script>
 			
       <?php
         $last_error = get_option('cleverpush_notification_error');
