@@ -5,7 +5,7 @@ Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
 Tested up to: 5.9.3
-Stable tag: 1.6.5
+Stable tag: 1.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,9 @@ Please enter your API keys in the plugin's settings and select a channel. If no 
 If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
+
+= 1.6.6 =
+* Append channel ID to worker file to make it work for some WordPress frameworks
 
 = 1.6.5 =
 * Fixed service worker file path for some WordPress frameworks
