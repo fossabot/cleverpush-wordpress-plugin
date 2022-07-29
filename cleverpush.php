@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.6.6
+Version: 1.7.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -57,6 +57,8 @@ if ( ! class_exists( 'CleverPush' ) ) :
 			add_action('frontpage_template', array($this, 'cleverpush_story_template' ), 11 );
 
 			add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this, 'plugin_add_settings_link'));
+
+      add_action('rss2_item', array($this, 'cleverpush_rss_item'));
 
 			if (
 				!is_admin() &&
@@ -509,14 +511,17 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				?>
 
 				<input type="hidden" name="cleverpush_metabox_form_data_available" value="1">
-				<label><input name="cleverpush_send_notification" type="checkbox"
-							  value="1" <?php if (get_post_meta($post->ID, 'cleverpush_send_notification', true)) echo 'checked'; ?>> <?php _e('Send push notification', 'cleverpush'); ?>
-				</label>
+				
+        <div>
+          <label><input name="cleverpush_send_notification" type="checkbox"
+                  value="1" <?php if (get_post_meta($post->ID, 'cleverpush_send_notification', true)) echo 'checked'; ?>> <?php _e('Send push notification', 'cleverpush'); ?>
+          </label>
+        </div>
 
 				<div class="cleverpush-content components-base-control" style="display: none; margin-top: 15px;">
 					<div class="components-base-control__field">
 						<label class="components-base-control__label"
-							   for="cleverpush_title"><?php _e('Custom headline', 'cleverpush'); ?> <?php echo get_option('cleverpush_notification_title_required') == 'on' ? ('(' . __('required', 'cleverpush') . ')') : '' ?>:</label>
+							   for="cleverpush_title"><?php _e('Custom headline', 'cleverpush'); ?><?php echo get_option('cleverpush_notification_title_required') == 'on' ? (' (' . __('required', 'cleverpush') . ')') : '' ?>:</label>
 						<div><input type="text" name="cleverpush_title" id="cleverpush_title"
 									value="<?php echo(!empty(get_post_meta($post->ID, 'cleverpush_title', true)) ? get_post_meta($post->ID, 'cleverpush_title', true) : ''); ?>"
 									style="width: 100%"
@@ -535,6 +540,12 @@ if ( ! class_exists( 'CleverPush' ) ) :
 						<div class="cleverpush-loading"></div>
 					</div>
 				</div>
+
+				<div style="margin-top: 15px;">
+          <label><input name="cleverpush_disable_feed" type="checkbox"
+                  value="1" <?php if (get_post_meta($post->ID, 'cleverpush_disable_feed', true)) echo 'checked'; ?>> <?php _e('Do not push via feed', 'cleverpush'); ?>
+          </label>
+        </div>
 
 				<script>
 					try {
@@ -845,8 +856,10 @@ if ( ! class_exists( 'CleverPush' ) ) :
 				return;
 			}
 
-			$should_send = get_post_status($post_id) != 'publish' ? isset ($_POST['cleverpush_send_notification']) : false;
+			$should_send = get_post_status($post_id) != 'publish' ? isset($_POST['cleverpush_send_notification']) : false;
 			update_post_meta($post_id, 'cleverpush_send_notification', $should_send);
+
+      update_post_meta($post_id, 'cleverpush_disable_feed', isset($_POST['cleverpush_disable_feed']));
 
 			if (isset($_POST['cleverpush_title'])) {
                 update_post_meta($post_id, 'cleverpush_title', $_POST['cleverpush_title']);
@@ -1450,6 +1463,14 @@ if ( ! class_exists( 'CleverPush' ) ) :
           >
           </amp-web-push>
         <?php
+      }
+    }
+
+    public function cleverpush_rss_item() {
+      global $post;
+      $metaValue = get_post_meta($post->ID, 'cleverpush_disable_feed', true);
+      if ($metaValue) {
+        echo "<cleverpush:disabled>true</cleverpush:disabled>";
       }
     }
 	}

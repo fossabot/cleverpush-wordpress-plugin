@@ -3,10 +3,10 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-01-13 14:40+0000\n"
-"PO-Revision-Date: 2022-01-13 14:42+0000\n"
-"Last-Translator: admin <marius@justviral.de>\n"
-"Language-Team: Deutsch\n"
-"Language: de-DE\n"
+"PO-Revision-Date: 2022-07-29 16:47+0000\n"
+"Last-Translator: \n"
+"Language-Team: German\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,124 +14,243 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-KeywordsList: __;_e\n"
-"X-Loco-Version: 2.3.1; wp-5.8.3\n"
+"X-Loco-Version: 2.6.0; wp-6.0.1\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: cleverpush.php:166
-msgid "CleverPush is almost ready."
-msgstr "CleverPush ist fast einsatzbereit."
-
-#: cleverpush.php:166
-#, php-format
-msgid "You have to select a channel in the %s to get started."
-msgstr "Du musst zuerst einen Kanal in den %s auswählen, um loszulegen."
-
-#: cleverpush.php:166
-msgid "settings"
-msgstr "Einstellungen"
-
-#: cleverpush.php:173
-msgctxt "post type general name"
-msgid "CP Stories"
-msgstr ""
-
-#: cleverpush.php:174
-msgctxt "post type general name"
-msgid "CleverPush Stories"
-msgstr ""
-
-#: cleverpush.php:175
-msgctxt "post type singular name"
-msgid "Story"
-msgstr ""
-
-#: cleverpush.php:176
-msgctxt "portfolio item"
-msgid "Neue Story"
-msgstr ""
-
-#: cleverpush.php:177
-msgid "Neue Story hinzufügen"
-msgstr ""
-
-#: cleverpush.php:178
-msgid "Story bearbeiten"
-msgstr ""
-
-#: cleverpush.php:179
-msgid "Neue Story"
-msgstr ""
-
-#: cleverpush.php:180
-msgid "Story ansehen"
-msgstr ""
-
-#: cleverpush.php:181
-msgid "Stories suchen"
-msgstr ""
-
-#: cleverpush.php:182 cleverpush.php:183
-msgid "Nichts gefunden"
-msgstr ""
-
-#: cleverpush.php:185
-msgid "Stories"
-msgstr "Stories"
-
-#: cleverpush.php:387
-msgid "Topics"
-msgstr "Themenbereiche"
-
-#: cleverpush.php:391 cleverpush.php:426
-msgid "All subscriptions"
-msgstr "Alle Abonnements"
-
-#: cleverpush.php:395
-msgid "Select topics"
-msgstr "Themen auswählen"
-
-#: cleverpush.php:422
-msgid "Segments"
-msgstr "Segmente"
-
-#: cleverpush.php:430
-msgid "Select segments"
-msgstr "Segmente auswählen"
-
-#: cleverpush.php:459 cleverpush.php:765 cleverpush.php:1179
-msgid "Please enter your API keys first"
-msgstr "Bitte gib zuerst deine API-Keys ein"
-
-#: cleverpush.php:498
+#: cleverpush.php:500
 msgid "A notification as been sent for this post"
 msgstr "Es wurde eine Benachrichtigung für diesen Beitrag versendet"
 
-#: cleverpush.php:513
-msgid "Send push notification"
-msgstr "Push Benachrichtigung senden"
+#: cleverpush.php:393 cleverpush.php:428
+msgid "All subscriptions"
+msgstr "Alle Abonnements"
 
-#: cleverpush.php:519
+#: cleverpush.php:1243
+msgid ""
+"Allow CleverPush to access unpublished posts in order to load preview data"
+msgstr ""
+"Erlaube CleverPush unveröffentlichte Beiträge zu öffnen, um Vorschaudaten zu "
+"laden"
+
+#: cleverpush.php:1270
+msgid "AMP Integration"
+msgstr "AMP Integration"
+
+#: cleverpush.php:1273
+msgid "AMP Integration enabled"
+msgstr "AMP Integration aktivieren"
+
+#: cleverpush.php:1277
+msgid "AMP Widget Position"
+msgstr "AMP Widget Position"
+
+#: cleverpush.php:1162
+msgid "API settings"
+msgstr "API Einstellungen"
+
+#: cleverpush.php:1280
+msgid "Bottom"
+msgstr "Unten"
+
+#. Name of the plugin
+#. Author of the plugin
+msgid "CleverPush"
+msgstr "CleverPush"
+
+#: cleverpush.php:168
+msgid "CleverPush is almost ready."
+msgstr "CleverPush ist fast einsatzbereit."
+
+#: cleverpush.php:1261
+msgid "CleverPush Script"
+msgstr "CleverPush Skript"
+
+#: cleverpush.php:1232
+msgid "CleverPush stories"
+msgstr "CleverPush Stories"
+
+#: cleverpush.php:1235
+msgid "CleverPush stories enabled"
+msgstr "CleverPush Stories aktivieren"
+
+#: cleverpush.php:524
 msgid "Custom headline"
 msgstr "Eigene Headline"
 
-#: cleverpush.php:519
-msgid "required"
-msgstr "erforderlich"
+#: cleverpush.php:1212
+msgid "Custom notification headline required"
+msgstr "Eigene Nachrichten Headlines sind notwendig"
 
-#: cleverpush.php:528
+#: cleverpush.php:533
 msgid "Custom text"
 msgstr "Eigener Text"
 
-#: cleverpush.php:593 cleverpush.php:931
+#: cleverpush.php:1264
+msgid "Do not output CleverPush script"
+msgstr "CleverPush Skript nicht ausgeben"
+
+#: cleverpush.php:546
+msgid "Do not push via feed"
+msgstr "Nicht über Feed pushen"
+
+#: cleverpush.php:1248
+msgid "Domain Replacement"
+msgstr "Domain-Ersetzung"
+
+#: cleverpush.php:1251
+msgid "Domain Replacement enabled"
+msgstr "Domain-Ersetzung aktivieren"
+
+#. URI of the plugin
+#. Author URI of the plugin
+msgid "https://cleverpush.com"
+msgstr "https://cleverpush.com"
+
+#: cleverpush.php:181
+msgid "Neue Story"
+msgstr "Neue Story"
+
+#: cleverpush.php:179
+msgid "Neue Story hinzufügen"
+msgstr "Neue Story hinzufügen"
+
+#: cleverpush.php:184 cleverpush.php:185
+msgid "Nichts gefunden"
+msgstr "Nichts gefunden"
+
+#: cleverpush.php:1199
+msgid "No channels available"
+msgstr "Keine Kanäle verfügbar"
+
+#: cleverpush.php:1209
+msgid "Notification headlines"
+msgstr "Nachrichten Headlines"
+
+#: cleverpush.php:461 cleverpush.php:776 cleverpush.php:1203
+msgid "Please enter your API keys first"
+msgstr "Bitte gib zuerst deine API-Keys ein"
+
+#: cleverpush.php:178
+msgctxt "portfolio item"
+msgid "Neue Story"
+msgstr "Neue Story"
+
+#: cleverpush.php:176
+msgctxt "post type general name"
+msgid "CleverPush Stories"
+msgstr "CleverPush Stories"
+
+#: cleverpush.php:175
+msgctxt "post type general name"
+msgid "CP Stories"
+msgstr "CP Stories"
+
+#: cleverpush.php:177
+msgctxt "post type singular name"
+msgid "Story"
+msgstr "Story"
+
+#: cleverpush.php:1217
+msgid "Post types"
+msgstr "Beitragstypen"
+
+#: cleverpush.php:1170
+msgid "Private API-Key"
+msgstr "Privater API-Key"
+
+#: cleverpush.php:1255
+msgid "Replacement Domain"
+msgstr "Neue Domain"
+
+#: cleverpush.php:524
+msgid "required"
+msgstr "erforderlich"
+
+#: cleverpush.php:1289
+msgid "Save Changes"
+msgstr "Änderungen speichern"
+
+#: cleverpush.php:424
+msgid "Segments"
+msgstr "Segmente"
+
+#: cleverpush.php:1176 cleverpush.php:1182
+msgid "Select Channel"
+msgstr "Kanal auswählen"
+
+#: cleverpush.php:432
+msgid "Select segments"
+msgstr "Segmente auswählen"
+
+#: cleverpush.php:397
+msgid "Select topics"
+msgstr "Themen auswählen"
+
+#: cleverpush.php:517
+msgid "Send push notification"
+msgstr "Push Benachrichtigung senden"
+
+#. Description of the plugin
+msgid ""
+"Send push notifications to your users right through your website. Visit <a "
+"href=\"https://cleverpush.com\">CleverPush</a> for more details."
+msgstr ""
+"Senden Sie Push-Benachrichtigungen direkt über Ihre Website an Ihre Benutzer."
+" Weitere Infos finden Sie unter <a href=\"https://cleverpush.com\">"
+"CleverPush</a>."
+
+#: cleverpush.php:168
+msgid "settings"
+msgstr "Einstellungen"
+
+#: cleverpush.php:187
+msgid "Stories"
+msgstr "Stories"
+
+#: cleverpush.php:183
+msgid "Stories suchen"
+msgstr "Stories suchen"
+
+#: cleverpush.php:182
+msgid "Story ansehen"
+msgstr "Story ansehen"
+
+#: cleverpush.php:180
+msgid "Story bearbeiten"
+msgstr "Story bearbeiten"
+
+#: cleverpush.php:1162
+#, php-format
+msgid "The API key can be found in the %s."
+msgstr "Der API-Key kann in den %s gefunden werden."
+
+#: cleverpush.php:604 cleverpush.php:944
 msgid "The push notification for this post has been successfully sent."
 msgstr ""
 "Die Push Benachrichtigung für diesen Beitrag wurde erfolgreich versendet."
 
-#: cleverpush.php:911
+#: cleverpush.php:924
 msgid "This link is not valid!"
 msgstr "Der angegebene Link ist ungültig!"
 
-#: cleverpush.php:1137
+#: cleverpush.php:1282
+msgid "Top"
+msgstr "Oben"
+
+#: cleverpush.php:389
+msgid "Topics"
+msgstr "Themenbereiche"
+
+#: cleverpush.php:1240
+msgid "Unpublished posts"
+msgstr "Unveröffentlichte Beiträge"
+
+#: cleverpush.php:168
+#, php-format
+msgid "You have to select a channel in the %s to get started."
+msgstr "Du musst zuerst einen Kanal in den %s auswählen, um loszulegen."
+
+#: cleverpush.php:1161
 #, php-format
 msgid ""
 "You need to have a %s account with an already set up channel to use this "
@@ -139,115 +258,3 @@ msgid ""
 msgstr ""
 "Du brauchst einen %s Account mit einem bereits eingerichteten Kanal, um "
 "dieses Plugin zu benutzen. Bitte wählen Sie den Kanal anschließend unten aus."
-
-#: cleverpush.php:1138
-#, php-format
-msgid "The API key can be found in the %s."
-msgstr "Der API-Key kann in den %s gefunden werden."
-
-#: cleverpush.php:1138
-msgid "API settings"
-msgstr "API Einstellungen"
-
-#: cleverpush.php:1146
-msgid "Private API-Key"
-msgstr "Privater API-Key"
-
-#: cleverpush.php:1152 cleverpush.php:1158
-msgid "Select Channel"
-msgstr "Kanal auswählen"
-
-#: cleverpush.php:1175
-msgid "No channels available"
-msgstr "Keine Kanäle verfügbar"
-
-#: cleverpush.php:1185
-msgid "Notification headlines"
-msgstr "Nachrichten Headlines"
-
-#: cleverpush.php:1188
-msgid "Custom notification headline required"
-msgstr "Eigene Nachrichten Headlines sind notwendig"
-
-#: cleverpush.php:1193
-msgid "Post types"
-msgstr "Beitragstypen"
-
-#: cleverpush.php:1208
-msgid "CleverPush stories"
-msgstr "CleverPush Stories"
-
-#: cleverpush.php:1211
-msgid "CleverPush stories enabled"
-msgstr "CleverPush Stories aktivieren"
-
-#: cleverpush.php:1216
-msgid "Unpublished posts"
-msgstr "Unveröffentlichte Beiträge"
-
-#: cleverpush.php:1219
-msgid ""
-"Allow CleverPush to access unpublished posts in order to load preview data"
-msgstr ""
-"Erlaube CleverPush unveröffentlichte Beiträge zu öffnen, um Vorschaudaten zu "
-"laden"
-
-#: cleverpush.php:1224
-msgid "Domain Replacement"
-msgstr "Domain-Ersetzung"
-
-#: cleverpush.php:1227
-msgid "Domain Replacement enabled"
-msgstr "Domain-Ersetzung aktivieren"
-
-#: cleverpush.php:1231
-msgid "Replacement Domain"
-msgstr "Neue Domain"
-
-#: cleverpush.php:1237
-msgid "CleverPush Script"
-msgstr "CleverPush Skript"
-
-#: cleverpush.php:1240
-msgid "Do not output CleverPush script"
-msgstr "CleverPush Skript nicht ausgeben"
-
-#: cleverpush.php:1246
-msgid "AMP Integration"
-msgstr "AMP Integration"
-
-#: cleverpush.php:1249
-msgid "AMP Integration enabled"
-msgstr "AMP Integration aktivieren"
-
-#: cleverpush.php:1253
-msgid "AMP Widget Position"
-msgstr "AMP Widget Position"
-
-#: cleverpush.php:1256
-msgid "Bottom"
-msgstr "Unten"
-
-#: cleverpush.php:1258
-msgid "Top"
-msgstr "Oben"
-
-#: cleverpush.php:1265
-msgid "Save Changes"
-msgstr "Änderungen speichern"
-
-#. Name of the plugin
-#. Author of the plugin
-msgid "CleverPush"
-msgstr "CleverPush"
-
-#. Description of the plugin
-msgid ""
-"Send push notifications to your users right through your website. Visit <a "
-"href=\"https://cleverpush.com\">CleverPush</a> for more details."
-msgstr ""
-
-#. URI of the plugin
-#. Author URI of the plugin
-msgid "https://cleverpush.com"
-msgstr ""
