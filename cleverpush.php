@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.7.1
+Version: 1.7.2
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -1356,7 +1356,7 @@ if (! class_exists('CleverPush') ) :
                 <td>
                   <input type="radio" name="cleverpush_amp_widget_position" id="cleverpush_amp_widget_position" <?php echo esc_attr(empty(get_option('cleverpush_amp_widget_position')) || get_option('cleverpush_amp_widget_position') == 'bottom' ? 'checked' : ''); ?> value="bottom" id="cleverpush_amp_widget_position_bottom" />
                   <label for="cleverpush_amp_widget_position_bottom"><?php _e('Bottom', 'cleverpush'); ?></label>
-                  <input type="radio" name="cleverpush_amp_widget_position" id="cleverpush_amp_widget_position" <?php echo esc_att(get_option('cleverpush_amp_widget_position') == 'top' ? 'checked' : ''); ?> value="top" id="cleverpush_amp_widget_position_top" style="margin-left: 10px;" />
+                  <input type="radio" name="cleverpush_amp_widget_position" id="cleverpush_amp_widget_position" <?php echo esc_attr(get_option('cleverpush_amp_widget_position') == 'top' ? 'checked' : ''); ?> value="top" id="cleverpush_amp_widget_position_top" style="margin-left: 10px;" />
                   <label for="cleverpush_amp_widget_position_top"><?php _e('Top', 'cleverpush'); ?></label>
                 </td>
               </tr>
