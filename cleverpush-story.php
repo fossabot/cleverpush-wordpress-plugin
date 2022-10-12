@@ -10,4 +10,4 @@ $content = get_transient('cleverpush_story_' . $storyId . '_content');
 ?>
 <?php
 
-echo esc_html($content);
+echo $content; // phpcs:ignore

@@ -3,31 +3,35 @@
 $cleverpush_id = null;
 $static_subdomain_suffix = '';
 
-if (!empty($_GET['channel'])) {
-    $cleverpush_id = sanitize_text_field($_GET['channel']);
+// No need for the template engine
+define('WP_USE_THEMES', false);
 
-} else {
+$wpLoaded = false;
 
-    // No need for the template engine
-    define('WP_USE_THEMES', false);
+// Assuming we're in a subdir: "~/wp-content/plugins/cleverpush"
+$wpConfigPath = '../../../wp-load.php';
 
-    // Assuming we're in a subdir: "~/wp-content/plugins/cleverpush"
-    $wpConfigPath = '../../../wp-load.php';
-    
-    // maybe the user uses bedrock
-    if (!file_exists($wpConfigPath)) {
-        $wpConfigPath = '../../../wp/wp-load.php';
-    }
+// maybe the user uses bedrock
+if (!file_exists($wpConfigPath)) {
+    $wpConfigPath = '../../../wp/wp-load.php';
+}
 
-    if (file_exists($wpConfigPath)) {
-        include_once $wpConfigPath;
-    
-        $cleverpush_id = get_option('cleverpush_channel_id');
+if (file_exists($wpConfigPath)) {
+    include_once $wpConfigPath;
+    $wpLoaded = true;
+}
 
-        $channel = get_option('cleverpush_channel_config');
-        if (!empty($channel) && !empty($channel->hostingLocation)) {
-            $static_subdomain_suffix = '-' . $channel->hostingLocation;
-        }
+if ($wpLoaded) {
+    $cleverpush_id = get_option('cleverpush_channel_id');
+} else if (!empty($_GET['channel']) && ctype_alnum($_GET['channel'])) { // phpcs:ignore
+    // We can't use sanitize_text_field here as the function is not defined here as wp-load is not included, yet. Input is sanitized via ctype_alnum.
+    $cleverpush_id = $_GET['channel']; // phpcs:ignore
+}
+
+if ($wpLoaded) {
+    $channel = get_option('cleverpush_channel_config');
+    if (!empty($channel) && !empty($channel->hostingLocation)) {
+        $static_subdomain_suffix = '-' . $channel->hostingLocation;
     }
 }
 
@@ -36,8 +40,8 @@ header("Content-Type: application/javascript");
 header("X-Robots-Tag: none");
 
 if (!empty($cleverpush_id)) {
-    echo esc_js("importScripts('https://static" . $static_subdomain_suffix . ".cleverpush.com/channel/worker/" . $cleverpush_id . ".js');\n");
+    echo "importScripts('https://static" . $static_subdomain_suffix . ".cleverpush.com/channel/worker/" . $cleverpush_id . ".js');\n"; // phpcs:ignore
 
-} else {
-    echo esc_js("// error: no cleverpush channel id found\n");
+} else if ($wpLoaded) {
+    echo "// error: no cleverpush channel id found\n"; // phpcs:ignore
 }

@@ -167,7 +167,19 @@ if (! class_exists('CleverPush') ) :
             }
 
             if (empty(get_option('cleverpush_channel_id'))) {
-                echo esc_html('<div class="updated fade"><p><strong>' . __('CleverPush is almost ready.', 'cleverpush') . '</strong> ' . sprintf(__('You have to select a channel in the %s to get started.', 'cleverpush'), '<a href="options-general.php?page=cleverpush_options">' . __('settings', 'cleverpush') . '</a>') . '</p></div>');
+                echo wp_kses(
+                    '<div class="updated fade"><p><strong>' . __('CleverPush is almost ready.', 'cleverpush') . '</strong> ' . sprintf(__('You have to select a channel in the %s to get started.', 'cleverpush'), '<a href="options-general.php?page=cleverpush_options">' . __('settings', 'cleverpush') . '</a>') . '</p></div>',
+                    array(
+                      'div' => array(
+                        'class' => array()
+                      ),
+                      'p' => array(),
+                      'strong' => array(),
+                      'a' => array(
+                        'href' => array()
+                      )
+                    )
+                );
             }
         }
 
@@ -243,25 +255,30 @@ if (! class_exists('CleverPush') ) :
                                     <th scope="row">Story auswählen</th>
                                     <td>
                                         <select name="cleverpush_story_id">
-                        <?php
-                        echo esc_html('<option value="" disabled' . (empty($cleverpushStoryId) ? ' selected' : '') . '>Bitte Story auswählen…</option>');
-                        foreach ( $stories as $story ) {
-                            echo esc_html('<option value="' . $story->_id . '"' . ($cleverpushStoryId == $story->_id ? ' selected' : '') . '>' . $story->title . '</option>');
-                        }
-                        ?>
+                                            <option value="" disabled<?php echo esc_attr(empty($cleverpushStoryId) ? ' selected' : ''); ?>>Bitte Story auswählen…</option>
+                                            <?php
+                                            foreach ( $stories as $story ) {
+                                                ?>
+                                                <option value="<?php echo esc_attr($story->_id); ?>"<?php echo esc_attr($cleverpushStoryId == $story->_id ? ' selected' : ''); ?>>
+                                                  <?php echo esc_html($story->title); ?>
+                                                </option>
+                                                <?php
+                                            }
+                                            ?>
                                         </select>
                                     </td>
                                 </tr>
 
                         <?php
+                    } else {
+                        ?>
+                        <div class="error notice"><p>Es wurden keine CleverPush Stories gefunden.</p></div>
+                        <?php
                     }
-                    else
-                    {
-                        echo esc_html('<div class="error notice"><p>Es wurden keine CleverPush Stories gefunden.</p></div>');
-                    }
-                }
-                else if (!empty($response['response'])) {
-                      echo esc_html('<div class="error notice"><p>API Error: ' . $response['response']['message'] . '</p></div>');
+                } else if (!empty($response['response'])) {
+                    ?>
+                    <div class="error notice"><p>API Error: <?php echo esc_html($response['response']['message']); ?></p></div>
+                    <?php
                 }
             }
 
@@ -950,10 +967,14 @@ if (! class_exists('CleverPush') ) :
             $result = get_option('cleverpush_notification_result', null);
             if ($result) {
                 if ($result['status'] === 'success') {
-                    echo esc_html('<div class="notice notice-success is-dismissible"><p>' . __('The push notification for this post has been successfully sent.', 'cleverpush') . '</p></div>');
+                    ?>
+                    <div class="notice notice-success is-dismissible"><p><?php echo esc_html(__('The push notification for this post has been successfully sent.', 'cleverpush')); ?></p></div>
+                    <?php
                 }
                 else if ($result['status'] === 'error') {
-                    echo esc_html('<div class="error is-dismissible"><p>CleverPush API Error:<br>' .  $result['message'] . '</p></div>');
+                    ?>
+                    <div class="error is-dismissible"><p>CleverPush API Error:<br>' . <?php echo esc_html($result['message']); ?></p></div>
+                    <?php
                 }
             }
             update_option('cleverpush_notification_result', null);
@@ -1006,10 +1027,13 @@ if (! class_exists('CleverPush') ) :
                  $plugin_version = $plugin_data['Version'];
 
                 if ($wp_worker_file) {
-                    echo esc_html("<script>window.cleverPushConfig = { serviceWorkerFile: '" . $this->get_worker_url() . "' };</script>\n");
+                    ?>
+                    <script>window.cleverPushConfig = { serviceWorkerFile: '<?php echo esc_url_raw($this->get_worker_url()); ?>' };</script>
+                    <?php
                 }
-
-                echo esc_html("\n<script src=\"" . $this->get_static_endpoint() . "/channel/loader/" . $cleverpush_id . ".js?ver=" . $plugin_version . "\" async></script>\n");
+                ?>
+                <script src="<?php echo esc_url_raw($this->get_static_endpoint() . "/channel/loader/" . $cleverpush_id . ".js?ver=" . $plugin_version); ?>" async></script>
+                <?php
             }
         }
 
@@ -1149,10 +1173,14 @@ if (! class_exists('CleverPush') ) :
 
                             <?php
                         } else {
-                            echo esc_html('<div class="error notice"><p>Es wurden keine CleverPush Stories gefunden.</p></div>');
+                            ?>
+                            <div class="error notice"><p>Es wurden keine CleverPush Stories gefunden.</p></div>
+                            <?php
                         }
                     } else if (!empty($response['response'])) {
-                           echo esc_html('<div class="error notice"><p>API Error: ' . $response['response']['message'] . '</p></div>');
+                        ?>
+                          <div class="error notice"><p>API Error: <?php echo esc_html($response['response']['message']); ?></p></div>
+                          <?php
                     }
                 }
 
@@ -1178,13 +1206,43 @@ if (! class_exists('CleverPush') ) :
 
             <div class="wrap">
                 <h2>CleverPush</h2>
-                <p><?php echo esc_html(sprintf(__('You need to have a %s account with an already set up channel to use this plugin. Please then select your channel below.', 'cleverpush'), '<a target="_blank" href="https://cleverpush.com/">CleverPush</a>')); ?></p>
-                <p><?php echo esc_html(sprintf(__('The API key can be found in the %s.', 'cleverpush'), '<a href="https://cleverpush.com/app/settings/api" target="_blank">' . __('API settings', 'cleverpush') . '</a>')); ?></p>
+                <p>
+                    <?php
+                    echo wp_kses(
+                        sprintf(
+                            __('You need to have a %s account with an already set up channel to use this plugin. Please then select your channel below.', 'cleverpush'),
+                            '<a target="_blank" href="https://cleverpush.com/">CleverPush</a>'
+                        ),
+                        array(
+                          'a' => array(
+                            'href' => array(),
+                            'target' => array()
+                          )
+                        )
+                    );
+                    ?>
+                </p>
+                <p>
+                    <?php
+                    echo wp_kses(
+                        sprintf(
+                            __('The API key can be found in the %s.', 'cleverpush'),
+                            '<a href="https://cleverpush.com/app/settings/api" target="_blank">' . __('API settings', 'cleverpush') . '</a>'
+                        ),
+                        array(
+                          'a' => array(
+                            'href' => array(),
+                            'target' => array()
+                          )
+                        )
+                    );
+                    ?>
+                </p>
 
                 <form method="post" action="options.php">
-            <?php settings_fields('cleverpush_options'); ?>
+                    <?php settings_fields('cleverpush_options'); ?>
 
-          <table class="form-table">
+                    <table class="form-table">
 
                         <tr valign="top">
                             <th scope="row"><?php _e('Private API-Key', 'cleverpush'); ?></th>
@@ -1204,11 +1262,11 @@ if (! class_exists('CleverPush') ) :
                                         foreach ($channels as $channel) {
                                             ?>
                                                 <option
-                          value="<?php echo esc_attr($channel->_id); ?>"
+                                                    value="<?php echo esc_attr($channel->_id); ?>"
                                             <?php echo esc_attr($selected_channel_id == $channel->_id ? 'selected' : ''); ?>
-                        >
+                                                >
                                             <?php echo esc_html($channel->name); ?>
-                        </option>
+                                                </option>
                                             <?php
                                         }
                                         ?>
