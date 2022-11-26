@@ -4,8 +4,8 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
-Tested up to: 6.1.0
-Stable tag: 1.8.0
+Tested up to: 6.1.1
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,9 @@ Please enter your API keys in the plugin's settings and select a channel. If no 
 If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
+
+= 1.8.1
+* Prevent issue when saving post and notification was previously scheduled
 
 = 1.8.0 =
 * Implement DateTimePicker for optional scheduling of notifications

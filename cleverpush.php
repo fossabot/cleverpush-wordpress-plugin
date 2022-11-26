@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.8.0
+Version: 1.8.1
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -585,10 +585,16 @@ if (! class_exists('CleverPush') ) :
                         var cpCheckbox = document.querySelector('input[name="cleverpush_send_notification"]');
                         var cpContent = document.querySelector('.cleverpush-content');
                         var cpLoading = document.querySelector('.cleverpush-loading-container');
+                        var cpScheduledAtInput = document.querySelector('input[name="cleverpush_scheduled_at"]');
+                        var cpScheduledAtPicker = document.querySelector('input[name="cleverpush_scheduled_at_picker"]');
                         if (cpCheckbox && cpContent) {
                             cpContent.style.display = cpCheckbox.checked ? 'block' : 'none';
                             cpCheckbox.addEventListener('change', function (e) {
                                 cpContent.style.display = e.target.checked ? 'block' : 'none';
+
+                                if (!e.target.checked && cpScheduledAtPicker) {
+                                  cpScheduledAtPicker.value = '';
+                                }
                             });
 
                             var initCleverPush = function () {
@@ -782,15 +788,13 @@ if (! class_exists('CleverPush') ) :
                                                 }
                                             }
 
-                                            var cpScheduledAtInput = document.querySelector('input[name="cleverpush_scheduled_at"]');
-                                            var cpScheduledAtPicker = document.querySelector('input[name="cleverpush_scheduled_at_picker"]');
                                             if (cpScheduledAtInput && cpScheduledAtPicker) {
                                                 var getLocalDateString = function(date) {
                                                     return date.getFullYear() + '-' + ((date.getMonth() + 1) + '').padStart(2, '0') + '-' + (date.getDate() + '') + "T" + (date.getHours() + '').padStart(2, '0') + ":" + (date.getMinutes() + '').padStart(2, '0')
                                                 };
                                                 var date = new Date();
                                                 cpScheduledAtPicker.min = getLocalDateString(date);
-                                                if (cpScheduledAtInput.value) {
+                                                if (cpScheduledAtInput.value && new Date(cpScheduledAtInput.value) > new Date()) {
                                                     cpScheduledAtPicker.value = getLocalDateString(new Date(cpScheduledAtInput.value));
                                                 }
                                                 cpScheduledAtPicker.addEventListener('change', function() {
