@@ -5,7 +5,7 @@ Plugin URI: https://cleverpush.com
 Tags: push notifications, web push, browser notifications, woocommerce
 Requires at least: 2.7
 Tested up to: 6.1.1
-Stable tag: 1.8.1
+Stable tag: 1.8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,10 @@ If you are using any cache plugin, also be sure, to empty your cache.
 
 == ChangeLog ==
 
-= 1.8.1
+= 1.8.2 =
+* Added setting to output CleverPush script in blocked mode (compatible with Consentmanager CMP)
+
+= 1.8.1 =
 * Prevent issue when saving post and notification was previously scheduled
 
 = 1.8.0 =
