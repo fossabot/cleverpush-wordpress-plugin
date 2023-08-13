@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.8.3
+Version: 1.9.0
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -1037,6 +1037,9 @@ if (! class_exists('CleverPush') ) :
             register_setting('cleverpush_options', 'cleverpush_apikey_public');
             register_setting('cleverpush_options', 'cleverpush_notification_title_required');
             register_setting('cleverpush_options', 'cleverpush_stories_enabled');
+            register_setting('cleverpush_options', 'cleverpush_feed_enabled');
+            register_setting('cleverpush_options', 'cleverpush_feed_maximum_days');
+            register_setting('cleverpush_options', 'cleverpush_feed_maximum_articles');
             register_setting('cleverpush_options', 'cleverpush_post_types');
             register_setting('cleverpush_options', 'cleverpush_preview_access_enabled');
             register_setting('cleverpush_options', 'cleverpush_enable_domain_replacement');
@@ -1387,11 +1390,11 @@ if (! class_exists('CleverPush') ) :
                 <label for="cleverpush_enable_domain_replacement"><?php _e('Domain Replacement enabled', 'cleverpush'); ?></label>
                             </td>
                         </tr>
-                        <tr valign="top" class="cleverpush-replacement-domain">
-                            <th scope="row"><?php _e('Replacement Domain', 'cleverpush'); ?></th>
-                            <td><input type="text" name="cleverpush_replacement_domain"
-                                    value="<?php echo esc_attr(get_option('cleverpush_replacement_domain')); ?>" style="width: 320px;"/></td>
-                        </tr>
+            <tr valign="top" class="cleverpush-replacement-domain">
+              <th scope="row"><?php _e('Replacement Domain', 'cleverpush'); ?></th>
+              <td><input type="text" name="cleverpush_replacement_domain"
+                        value="<?php echo esc_attr(get_option('cleverpush_replacement_domain')); ?>" style="width: 320px;"/></td>
+            </tr>
 
             <tr valign="top">
               <th scope="row"><?php _e('CleverPush Script', 'cleverpush'); ?></th>
@@ -1404,8 +1407,26 @@ if (! class_exists('CleverPush') ) :
             <tr valign="top">
               <th scope="row"></th>
               <td>
-                <input type="checkbox" name="cleverpush_script_blocked_consentmanager_enabled" id="cleverpush_script_blocked_consentmanager_enabled" <?php echo esc_attr(get_option('cleverpush_script_blocked_consentmanager_enabled') == 'on' ? 'checked' : ''); ?> id="cleverpush_script_blocked_consentmanager_enabled" />
+                <input type="checkbox" name="cleverpush_script_blocked_consentmanager_enabled" id="cleverpush_script_blocked_consentmanager_enabled" <?php echo esc_attr(get_option('cleverpush_script_blocked_consentmanager_enabled') == 'on' ? 'checked' : ''); ?> />
                 <label for="cleverpush_script_blocked_consentmanager_enabled"><?php _e('Output CleverPush script in blocked mode (Consentmanager)', 'cleverpush'); ?></label>
+              </td>
+            </tr>
+
+            <tr valign="top">
+              <th scope="row"><?php _e('Feed', 'cleverpush'); ?></th>
+              <td>
+                <input type="checkbox" name="cleverpush_feed_enabled" id="cleverpush_feed_enabled" <?php echo esc_attr(get_option('cleverpush_feed_enabled') == 'on' ? 'checked' : ''); ?> />
+                <label for="cleverpush_feed_enabled"><?php _e('Enable RSS Feed for old articles', 'cleverpush'); ?></label>
+
+                <?php if (get_option('cleverpush_feed_enabled') == 'on') : ?>
+
+                  <div style="margin: 10px 0;">Show articles with a maximum age of <input type="number" name="cleverpush_feed_maximum_days" id="cleverpush_feed_maximum_days" value="<?php echo esc_attr(get_option('cleverpush_feed_maximum_days')); ?>" style="width: 100px;" min="0" step="1" /> days in the feed</div>
+
+                  <div style="margin: 10px 0;">Show maximum <input type="number" name="cleverpush_feed_maximum_articles" id="cleverpush_feed_maximum_articles" value="<?php echo esc_attr(get_option('cleverpush_feed_maximum_articles')); ?>" style="width: 100px;" min="0" step="1" /> articles in the feed</div>
+
+                  <div style="margin: 10px 0;">Feed URL: <a href="<?php echo get_site_url() . $this->get_plugin_path() . '/cleverpush-feed.php'; ?>" target="_blank"><?php echo get_site_url() . $this->get_plugin_path() . '/cleverpush-feed.php'; ?></a></div>
+
+                <?php endif; ?>
               </td>
             </tr>
 
