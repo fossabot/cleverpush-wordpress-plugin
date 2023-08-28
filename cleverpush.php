@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.9.0
+Version: 1.9.1
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -1644,7 +1644,7 @@ if (! class_exists('CleverPush') ) :
             global $post;
             $metaValue = get_post_meta($post->ID, 'cleverpush_disable_feed', true);
             if ($metaValue) {
-                echo "<cleverpush:disabled>true</cleverpush:disabled>";
+                echo "<dc:contributor>cleverpush:disabled</dc:contributor>";
             }
         }
     }
