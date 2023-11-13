@@ -16,7 +16,7 @@ steps:
   image: alpine:latest
   pull: if-not-exists
   commands:
-  - apk update && apk add subversion
+  - apk update && apk add subversion && apk add bash
   - ./deploy/deploy.sh
   environment:
     SVN_USERNAME:
