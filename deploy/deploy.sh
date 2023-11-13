@@ -11,7 +11,7 @@ rsync \
 --exclude .git \
 --exclude .travis.yml \
 --exclude .vscode \
---exclude .github
+--exclude .github \
 -vaz ./* ./svn/trunk/
 rsync -vaz ./assets ./svn/
 
