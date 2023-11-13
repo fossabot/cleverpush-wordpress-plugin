@@ -3,11 +3,19 @@ type: docker
 name: default
 
 steps:
-- name: deploy
-  image: wordpressdevelop/php
+- name: validate
+  image: php
   pull: if-not-exists
   commands:
   - php -l *.php
+  when:
+    event:
+    - tag
+
+- name: deploy
+  image: docker pull jgsqware/svn-client
+  pull: if-not-exists
+  commands:
   - ./deploy/deploy.sh
   environment:
     SVN_USERNAME:
