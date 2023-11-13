@@ -13,7 +13,7 @@ steps:
     - tag
 
 - name: deploy
-  image: docker pull jgsqware/svn-client
+  image: nbrun/svn-client
   pull: if-not-exists
   commands:
   - ./deploy/deploy.sh
