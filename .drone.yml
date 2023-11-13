@@ -1,0 +1,19 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: deploy
+  image: wordpressdevelop/php
+  pull: if-not-exists
+  commands:
+  - ./deploy/deploy.sh
+  environment:
+    SVN_USERNAME:
+      from_secret: SVN_USERNAME
+    SVN_PASSWORD:
+      from_secret: SVN_PASSWORD
+    SVN_REPOSITORY: https://plugins.svn.wordpress.org/cleverpush
+  when:
+    event:
+    - tag

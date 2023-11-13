@@ -10,6 +10,8 @@ rsync \
 --exclude deploy \
 --exclude .git \
 --exclude .travis.yml \
+--exclude .vscode \
+--exclude .github
 -vaz ./* ./svn/trunk/
 rsync -vaz ./assets ./svn/
 
@@ -22,13 +24,13 @@ svn add --force assets
 
 # 5. Create SVN tag
 svn cp \
-trunk tags/$TRAVIS_TAG \
+trunk tags/$DRONE_TAG \
 --username $SVN_USERNAME \
 --password $SVN_PASSWORD
 
 # 6. Push SVN tag
 svn ci \
---message "Release $TRAVIS_TAG" \
+--message "Release $DRONE_TAG" \
 --username $SVN_USERNAME \
 --password $SVN_PASSWORD \
 --non-interactive
