@@ -4,7 +4,7 @@ name: default
 
 steps:
 - name: validate
-  image: php
+  image: php:latest
   pull: if-not-exists
   commands:
   - php -l *.php
@@ -13,9 +13,10 @@ steps:
     - tag
 
 - name: deploy
-  image: nbrun/svn-client
+  image: alpine:latest
   pull: if-not-exists
   commands:
+  - apk update && apk add subversion
   - ./deploy/deploy.sh
   environment:
     SVN_USERNAME:
