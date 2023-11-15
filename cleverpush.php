@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.9.4
+Version: 1.9.5
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -1155,19 +1155,19 @@ if (! class_exists('CleverPush') ) :
                                 update_option('cleverpush_channel_subdomain', $channel->identifier);
                                 update_option('cleverpush_channel_hidden_notification_settings', isset($channel->hiddenNotificationSettings) && is_array($channel->hiddenNotificationSettings) ? implode($channel->hiddenNotificationSettings) : '');
 
-                                $worker_file = !empty($channel->serviceWorkerPath) ? $channel->serviceWorkerPath : '/cleverpush-worker.js';
-                                $response = wp_remote_get(
-                                    get_home_url() . $worker_file, [
-                                    'timeout' => 3,
-                                    ]
-                                );
-                                $response_code = wp_remote_retrieve_response_code($response);
-                                $response_successful = !empty($response_code) && $response_code == 200;
-
-                                if (!$response_successful) {
-                                    update_option('cleverpush_channel_worker_file', true);
-                                } else {
+                                if (!empty($channel->serviceWorkerPath)) {
                                     update_option('cleverpush_channel_worker_file', false);
+                                } else {
+                                    $worker_file = !empty($channel->serviceWorkerPath) ? $channel->serviceWorkerPath : '/cleverpush-worker.js';
+                                    $response = wp_remote_get(
+                                        get_home_url() . $worker_file, [
+                                        'timeout' => 3,
+                                        ]
+                                    );
+                                    $response_code = wp_remote_retrieve_response_code($response);
+                                    $response_successful = !empty($response_code) && $response_code == 200;
+    
+                                    update_option('cleverpush_channel_worker_file', !$response_successful);
                                 }
                             }
                         }
