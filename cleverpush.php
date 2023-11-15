@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.9.3
+Version: 1.9.4
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -1157,7 +1157,7 @@ if (! class_exists('CleverPush') ) :
 
                                 $worker_file = !empty($channel->serviceWorkerPath) ? $channel->serviceWorkerPath : '/cleverpush-worker.js';
                                 $response = wp_remote_get(
-                                    get_site_url() . $worker_file, [
+                                    get_home_url() . $worker_file, [
                                     'timeout' => 3,
                                     ]
                                 );
@@ -1427,7 +1427,7 @@ if (! class_exists('CleverPush') ) :
 
                   <div style="margin: 10px 0;">Show maximum <input type="number" name="cleverpush_feed_maximum_articles" id="cleverpush_feed_maximum_articles" value="<?php echo esc_attr(get_option('cleverpush_feed_maximum_articles')); ?>" style="width: 100px;" min="0" step="1" /> articles in the feed</div>
 
-                  <div style="margin: 10px 0;">Feed URL: <a href="<?php echo get_site_url() . $this->get_plugin_path() . '/cleverpush-feed.php'; ?>" target="_blank"><?php echo get_site_url() . $this->get_plugin_path() . '/cleverpush-feed.php'; ?></a></div>
+                  <div style="margin: 10px 0;">Feed URL: <a href="<?php echo get_home_url() . $this->get_plugin_path() . '/cleverpush-feed.php'; ?>" target="_blank"><?php echo get_home_url() . $this->get_plugin_path() . '/cleverpush-feed.php'; ?></a></div>
 
                 <?php endif; ?>
               </td>
