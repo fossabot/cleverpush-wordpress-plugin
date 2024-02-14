@@ -4,7 +4,7 @@ Plugin Name: CleverPush
 Plugin URI: https://cleverpush.com
 Description: Send push notifications to your users right through your website. Visit <a href="https://cleverpush.com">CleverPush</a> for more details.
 Author: CleverPush
-Version: 1.9.6
+Version: 1.9.7
 Author URI: https://cleverpush.com
 Text Domain: cleverpush
 Domain Path: /languages
@@ -402,6 +402,7 @@ if (! class_exists('CleverPush') ) :
             $selected_channel_id = get_option('cleverpush_channel_id');
             $api_key_private = get_option('cleverpush_apikey_private');
             $cleverpush_topics_required = false;
+            $cleverpush_tags_required = false;
             $cleverpush_segments_required = false;
             $hidden_notification_settings = get_option('cleverpush_channel_hidden_notification_settings');
 
@@ -484,6 +485,45 @@ if (! class_exists('CleverPush') ) :
                     }
                 }
 
+                $cleverpush_tags = array();
+
+                if (empty($hidden_notification_settings) || strpos($hidden_notification_settings, 'tags') === false) {
+                    $response = wp_remote_get(
+                        CLEVERPUSH_API_ENDPOINT . '/channel/' . $selected_channel_id . '/tags', array(
+                        'timeout' => 10, // phpcs:ignore
+                        'headers' => array(
+                        'authorization' => $api_key_private
+                          )
+                        )
+                    );
+
+                    if (is_wp_error($response)) {
+                        $tags_data = get_transient('cleverpush_tags_response');
+
+                        if (empty($tags_data)) {
+                            ?>
+                <div class="error notice">
+                    <p><?php echo esc_html($response->get_error_message()); ?></p>
+                </div>
+                               <?php
+                        }
+                    } else {
+                        $body = wp_remote_retrieve_body($response);
+                        $tags_data = json_decode($body);
+
+                        set_transient('cleverpush_tags_response', $tags_data, 60 * 60 * 24 * 30);
+                    }
+
+                    if (isset($tags_data)) {
+                        if (isset($tags_data->tags)) {
+                            $cleverpush_tags = $tags_data->tags;
+                        }
+                        if (isset($tags_data->tagsRequiredField) && $tags_data->tagsRequiredField) {
+                            $cleverpush_tags_required = true;
+                        }
+                    }
+                }
+
                 ?>
 
                 <?php
@@ -511,6 +551,41 @@ if (! class_exists('CleverPush') ) :
                                 <label>
                                     <input type="checkbox" name="cleverpush_topics[]"
                                            value="<?php echo esc_attr($topic->_id); ?>"><?php echo esc_html($topic->name); ?></input>
+                                </label>
+                            </div>
+                        <?php
+                    }
+                    ?>
+                    </div>
+                    <?php
+                }
+                ?>
+
+                <?php
+                if (!empty($cleverpush_tags) && count($cleverpush_tags) > 0) {
+                    ?>
+                    <div class="components-base-control__field">
+                        <label class="components-base-control__label"><?php _e('Tags', 'cleverpush'); ?>:</label>
+                        <div>
+                            <div>
+                                <label><input name="cleverpush_use_tags" type="radio" value="0"
+                                              checked> <?php _e('All subscriptions', 'cleverpush'); ?></label>
+                            </div>
+                            <div>
+                                <label><input name="cleverpush_use_tags" type="radio"
+                                              value="1"> <?php _e('Select tags', 'cleverpush'); ?></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="components-base-control__field cleverpush-tags"
+                         style="display: none; margin-left: 30px;" data-required="<?php echo esc_attr($cleverpush_tags_required ? 'true' : 'false'); ?>">
+                    <?php
+                    foreach ($cleverpush_tags as $tag) {
+                        ?>
+                            <div>
+                                <label>
+                                    <input type="checkbox" name="cleverpush_tags[]"
+                                           value="<?php echo esc_attr($tag->_id); ?>"><?php echo esc_html($tag->name); ?></input>
                                 </label>
                             </div>
                         <?php
@@ -770,6 +845,18 @@ if (! class_exists('CleverPush') ) :
                                                 for (var cpTopicsRadioIndex = 0; cpTopicsRadioIndex < cpTopicsRadios.length; cpTopicsRadioIndex++) {
                                                     cpTopicsRadios[cpTopicsRadioIndex].addEventListener('change', function (e) {
                                                         cpTopics.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
+                                                    });
+                                                }
+                                            }
+
+                                            var cpTagsRadios = document.querySelectorAll('input[name="cleverpush_use_tags"]');
+                                            var cpTags = document.querySelector('.cleverpush-tags');
+                                            var tagsRequired = false;
+                                            if (cpTagsRadios && cpTags) {
+                                                tagsRequired = cpTags.dataset.required === 'true';
+                                                for (var cpTagsRadioIndex = 0; cpTagsRadioIndex < cpTagsRadios.length; cpTagsRadioIndex++) {
+                                                  cpTagsRadios[cpTagsRadioIndex].addEventListener('change', function (e) {
+                                                        cpTags.style.display = e.currentTarget.value === '1' ? 'block' : 'none';
                                                     });
                                                 }
                                             }
@@ -1072,6 +1159,9 @@ if (! class_exists('CleverPush') ) :
             }
             if (isset($_POST['cleverpush_use_topics']) && $_POST['cleverpush_use_topics'] == '1' && !empty($_POST['cleverpush_topics'])) {
                 $options['topics'] = array_map('sanitize_text_field', $_POST['cleverpush_topics']);
+            }
+            if (isset($_POST['cleverpush_use_tags']) && $_POST['cleverpush_use_tags'] == '1' && !empty($_POST['cleverpush_tags'])) {
+                $options['tags'] = array_map('sanitize_text_field', $_POST['cleverpush_tags']);
             }
             $thumbnail_url = get_the_post_thumbnail_url();
             if (!empty($thumbnail_url)) {
