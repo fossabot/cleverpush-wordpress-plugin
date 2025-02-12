@@ -24,13 +24,13 @@ svn add --force assets
 
 # 5. Create SVN tag
 svn cp \
-trunk tags/$DRONE_TAG \
+trunk tags/$GITHUB_REF_NAME \
 --username $SVN_USERNAME \
 --password $SVN_PASSWORD
 
 # 6. Push SVN tag
 svn ci \
---message "Release $DRONE_TAG" \
+--message "Release $GITHUB_REF_NAME" \
 --username $SVN_USERNAME \
 --password $SVN_PASSWORD \
 --non-interactive
